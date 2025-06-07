@@ -1,4 +1,6 @@
-﻿namespace ASTeroid
+﻿using ASTeroid.Structs;
+
+namespace ASTeroid
 {
     internal class Program
     {
