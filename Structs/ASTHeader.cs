@@ -32,21 +32,21 @@ namespace ASTeroid.Structs
         /// Little Endian AST files are similar to .wav files, and use raw PCM. rSoundAst files in the .arc archive have much more complicated structures.
         /// Position 0x00 - 0x03
         /// </summary>
-        public const uint LITTLE_ENDIAN_MAGIC = 0x4153544C;
+        public const int LITTLE_ENDIAN_MAGIC = 0x4153544C;
         /// <summary>
         /// The magic number (ASTB) used by the AST format on BE platforms such as PPC.
         /// BE support not implemented. Big Endian AST files, as in Dead Rising on the Xbox 360, use XMA encoding.
         /// Position 0x00 - 0x03
         /// </summary>
-        public const uint BIG_ENDIAN_MAGIC = 0x41535442;
+        public const int BIG_ENDIAN_MAGIC = 0x41535442;
 
-        public uint StartOffset;
-        public uint ASTLength;
-        public uint SampleRate;
-        public uint BitDepth;
-        public uint BytesPerSecond;
-        public ushort Channels;
-        public ushort Flag;
+        public int StartOffset;
+        public int ASTLength;
+        public int SampleRate;
+        public short BitDepth;
+        public int BytesPerSecond;
+        public short Channels;
+        public short Flag;
 
         public const uint ZERO_PAD = 0x00000000;
         public const uint FFFF_PAD = 0xFFFFFFFF;
