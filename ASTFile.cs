@@ -42,21 +42,18 @@ namespace ASTeroid
         /// </summary>
         /// <param name="fileStream">A stream containing the binary data of an AST file</param>
         /// <returns>An ASTHeader matching the input.</returns>
-        public static ASTHeader ParseHeader(Stream fileStream)
+        public static ASTHeader ParseHeader(BinaryReader reader)
         {
-            using (BinaryReader reader = new BinaryReader(fileStream))
+            return new ASTHeader
             {
-                return new ASTHeader
-                {
-                    StartOffset = PositionReader.ReadInt32At(reader, 0x10),
-                    ASTLength = PositionReader.ReadInt32At(reader, 0x20),
-                    PCMFlag = PositionReader.ReadInt16At(reader, 0x30),
-                    Channels = PositionReader.ReadInt16At(reader, 0x32),
-                    BytesPerSecond = PositionReader.ReadInt32At(reader, 0x38),
-                    BitDepth = PositionReader.ReadInt16At(reader, 0x3E),
-                    SampleRate = PositionReader.ReadInt32At(reader, 0x40)  
-                };
-            }
+                StartOffset = PositionReader.ReadInt32At(reader, 0x10),
+                ASTLength = PositionReader.ReadInt32At(reader, 0x20),
+                PCMFlag = PositionReader.ReadInt16At(reader, 0x30),
+                Channels = PositionReader.ReadInt16At(reader, 0x32),
+                BytesPerSecond = PositionReader.ReadInt32At(reader, 0x38),
+                BitDepth = PositionReader.ReadInt16At(reader, 0x3E),
+                SampleRate = PositionReader.ReadInt32At(reader, 0x40)  
+            };
         }
     }
 }
