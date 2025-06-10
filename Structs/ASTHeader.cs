@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+
+using ASTeroid.Enums;
 
 namespace ASTeroid.Structs
 {
@@ -23,31 +26,52 @@ namespace ASTeroid.Structs
      * 0x38-0x3B = bytes per second (sampleRate * bitDepth * channels) / 8 (int)
      * 0x3C-0x3D = unknown (always 4) (short)
      * 0x3E-0x3F = bit-depth (short)
+     * I suspect the rest is some format identifier, guid block, etc. Regardless it's all same between files despite one value which changes nothing when altered. This section should still be reversed more.
+     * 
+     * Packed this way we can just create an ASTHeader and send it off.
      */
-    public struct ASTHeader
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    internal struct ASTHeader
     {
-        /// <summary>
-        /// The magic number (ASTL) used by the AST format on LE platforms such as x86.
-        /// Little Endian AST files are similar to .wav files, and use raw PCM. rSoundAst files in the .arc archive have much more complicated structures.
-        /// Position 0x00 - 0x03
-        /// </summary>
-        public const int LITTLE_ENDIAN_MAGIC = 0x4C545341;
-        /// <summary>
-        /// The magic number (ASTB) used by the AST format on BE platforms such as PPC.
-        /// BE support not implemented. Big Endian AST files, as in Dead Rising on the Xbox 360, use XMA encoding.
-        /// Position 0x00 - 0x03
-        /// </summary>
-        public const int BIG_ENDIAN_MAGIC = 0x42545341;
+        public int Magic { get; private set; }
+        public readonly int ZeroPad_1 = 0x00000000;
+        public readonly int Unknown_1 = 0x00000201;
+        public readonly int Unknown_2 = 0x00000001;
+        public int AudioOffset { get; private set; }
+        public readonly int ZeroPad_2 = 0x00000000;
+        public readonly int ZeroPad_3 = 0x00000000;
+        public readonly int ZeroPad_4 = 0x00000000;
+        public int AudioLength { get; private set; }
+        public readonly uint FFFFPad_1 = 0xFFFFFFFF;
+        public readonly uint FFFFPad_2 = 0xFFFFFFFF;
+        public readonly uint FFFFPad_3 = 0xFFFFFFFF;
+        public short PCMFlag { get; private set; }
+        public short AudioChannels { get; private set; }
+        public int AudioSampleRate { get; private set; }
+        public int AudioBytesPerSecond { get; private set; }
+        public short AudioBlockAlign { get; private set; }
+        public short AudioBitDepth { get; private set; }
+        public short Unknown_3 { get; private set; }
 
-        public int StartOffset { get; set; } 
-        public int ASTLength { get; set; }
-        public int SampleRate { get; set; }
-        public short BitDepth { get; set; }
-        public int BytesPerSecond { get; set; }
-        public short Channels { get; set; }
-        public short PCMFlag { get; set; }
+        public readonly int Block_1 = 0xC0000;
+        public readonly int Block_2 = 0x42F001;
+        public readonly int Block_3 = 0xC;
+        public readonly int Block_4 = 0x77953145;
+        public readonly short Block_5 = 0x0;
+        public readonly short Block_6 = 0x1FCB;
+        public readonly int Block_7 = -2;
 
-        public const uint ZERO_PAD = 0x00000000;
-        public const uint FFFF_PAD = 0xFFFFFFFF;
+        public ASTHeader(AudioData data)
+        {
+            Magic = data.Endianness == Endian.LITTLE_ENDIAN ? ASTFile.LITTLE_ENDIAN_MAGIC : ASTFile.BIG_ENDIAN_MAGIC;
+            AudioOffset = data.StartOffset;
+            AudioLength = data.Length;
+            PCMFlag = data.PCMFlag;
+            AudioChannels = data.Channels;
+            AudioSampleRate = data.SampleRate;
+            AudioBytesPerSecond = data.BytesPerSecond;
+            AudioBlockAlign = data.BlockAlign;
+            AudioBitDepth = data.BitDepth;
+        }
     }
 }

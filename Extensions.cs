@@ -10,12 +10,12 @@ namespace ASTeroid
     {
         public static HashSet<string> ASTExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "ast", "rSoundAst"
+            ".ast", ".rSoundAst"
         };
 
         public static HashSet<string> CommonExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "mp3", "wav", "ogg", "flac"
+            ".mp3", ".wav", ".ogg", ".flac"
         };
     }
 }

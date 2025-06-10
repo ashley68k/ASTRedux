@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using ASTeroid.Structs;
@@ -13,7 +14,7 @@ namespace ASTeroid
     {
         public static void ProcessAST(FileInfo input, FileInfo? output)
         {
-            using var reader = new BinaryReader(input.OpenRead());
+            using BinaryReader reader = new BinaryReader(input.OpenRead());
 
             if (!ASTFile.ValidateMagic(reader))
             {
@@ -24,11 +25,26 @@ namespace ASTeroid
 
         public static void ProcessAudio(FileInfo input, FileInfo? output)
         {
-            using var binaryReader = new BinaryReader(input.OpenRead());
+            using AudioFileReader audioInput = new(input.FullName);
+            using BinaryReader reader = new BinaryReader(input.OpenRead());
+            using BinaryWriter writer = new BinaryWriter(File.OpenWrite(output.FullName));
 
-            AudioFileReader audioInput = new(input.FullName);
+            using var pcmStream = new Wave32To16Stream(audioInput);
+            using var ms = new MemoryStream();
+            pcmStream.CopyTo(ms);
+            byte[] pcmBuffer = ms.ToArray();
 
-            
+            ASTFile ast = new(
+                ASTFile.ParseData(pcmStream, pcmBuffer.Length)
+            );
+
+            ASTHeader header = new ASTHeader(ast.AudioInfo);
+
+            writer.Write(header.StructToByteArray());
+            writer.BaseStream.Position = ast.AudioInfo.StartOffset;
+            writer.Write(pcmBuffer);
+
+            Console.WriteLine("Audio conversion to .ast finished!");
         }
     }
 }

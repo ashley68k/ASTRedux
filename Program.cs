@@ -45,7 +45,12 @@ namespace ASTeroid
         {
             if (!input.Exists)
             {
-                Console.WriteLine("File doesn't exist!");
+                Console.WriteLine("Input file doesn't exist!");
+                return;
+            }
+            if(output.Exists)
+            {
+                Console.WriteLine("Output file already exists!");
                 return;
             }
 
@@ -59,8 +64,10 @@ namespace ASTeroid
             {
                 Processing.ProcessAudio(input, output);
             }
-
-            Console.WriteLine($"Extension input {input.Extension} is invalid!");
+            else 
+            {
+                Console.WriteLine($"Extension input {input.Extension} is invalid!");
+            }
             return;
         }
     }

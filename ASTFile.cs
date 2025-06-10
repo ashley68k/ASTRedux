@@ -4,15 +4,31 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using ASTeroid.Enums;
 using ASTeroid.Structs;
+using NAudio.Wave;
 
 namespace ASTeroid
 {
     internal class ASTFile
     {
-        public ASTHeader Header { get; set; }
-        public byte[]? FileContent { get; private set; }
-        public byte[]? SampleBuffer { get; private set; }
+        /// <summary>
+        /// The magic number (ASTL) used by the AST format on LE platforms such as x86.
+        /// Little Endian AST files are similar to .wav files, and use raw PCM. rSoundAst files in the .arc archive have much more complicated structures.
+        /// Position 0x00 - 0x03
+        /// </summary>
+        public const int LITTLE_ENDIAN_MAGIC = 0x4C545341;
+        /// <summary>
+        /// The magic number (ASTB) used by the AST format on BE platforms such as PPC.
+        /// BE support not implemented. Big Endian AST files, as in Dead Rising on the Xbox 360, use XMA encoding.
+        /// Position 0x00 - 0x03
+        /// </summary>
+        public const int BIG_ENDIAN_MAGIC = 0x42545341;
+
+        public const uint ZERO_PAD = 0x00000000;
+        public const uint FFFF_PAD = 0xFFFFFFFF;
+
+        public AudioData AudioInfo { get; set; }
 
         public const int MIN_FILE_SIZE = 0x40;
 
@@ -22,7 +38,7 @@ namespace ASTeroid
         /// <returns>Expected file size, or -1 on invalid length. Length check isn't rigorous.</returns>
         public int GetFileSize()
         {
-            int length = Header.StartOffset + Header.ASTLength;
+            int length = AudioInfo.StartOffset + AudioInfo.Length;
             return length >= MIN_FILE_SIZE ? length : -1;
         }
 
@@ -34,26 +50,57 @@ namespace ASTeroid
         public static bool ValidateMagic(BinaryReader reader)
         {
             int streamMagic = PositionReader.ReadInt32At(reader, 0x00);
-            return streamMagic == ASTHeader.LITTLE_ENDIAN_MAGIC || streamMagic == ASTHeader.BIG_ENDIAN_MAGIC;
+            return streamMagic == LITTLE_ENDIAN_MAGIC || streamMagic == BIG_ENDIAN_MAGIC;
         }
 
         /// <summary>
-        /// Creates an ASTHeader struct from an input stream.
+        /// Creates an AudioData object from an input AST.
         /// </summary>
         /// <param name="fileStream">A stream containing the binary data of an AST file</param>
-        /// <returns>An ASTHeader matching the input.</returns>
-        public static ASTHeader ParseHeader(BinaryReader reader)
+        /// <returns>An AudioData object matching the input.</returns>
+        public static AudioData ParseData(BinaryReader reader)
         {
-            return new ASTHeader
+            return new AudioData
             {
                 StartOffset = PositionReader.ReadInt32At(reader, 0x10),
-                ASTLength = PositionReader.ReadInt32At(reader, 0x20),
+                Length = PositionReader.ReadInt32At(reader, 0x20),
                 PCMFlag = PositionReader.ReadInt16At(reader, 0x30),
                 Channels = PositionReader.ReadInt16At(reader, 0x32),
                 BytesPerSecond = PositionReader.ReadInt32At(reader, 0x38),
                 BitDepth = PositionReader.ReadInt16At(reader, 0x3E),
-                SampleRate = PositionReader.ReadInt32At(reader, 0x40)  
+                SampleRate = PositionReader.ReadInt32At(reader, 0x40),
+                // always LE until BE support is added
+                Endianness = Endian.LITTLE_ENDIAN
             };
+        }
+
+        /// <summary>
+        /// Creates an AudioData object from an input audio file.
+        /// </summary>
+        /// <param name="fileStream">A stream containing the binary data of an audio file</param>
+        /// <returns>An AudioData object matching the input.</returns>
+        public static AudioData ParseData(Wave32To16Stream reader, int length)
+        {
+            WaveFormat fmt = reader.WaveFormat;
+            return new AudioData
+            {
+                // dead rising ASTs always start at 0x800, and header is 0x40 anyways. length and PCM is also guaranteed
+                StartOffset = 0x800,
+                Length = length,
+                PCMFlag = 1,
+                Channels = (short)fmt.Channels,
+                BytesPerSecond = (fmt.SampleRate * fmt.BitsPerSample * fmt.Channels) / 8,
+                BitDepth = (short)fmt.BitsPerSample,
+                SampleRate = fmt.SampleRate,
+                BlockAlign = (short)(fmt.Channels * 2),
+                // always LE until BE support is added
+                Endianness = Endian.LITTLE_ENDIAN
+            };
+        }
+
+        public ASTFile(AudioData inData)
+        {
+            AudioInfo = inData;
         }
     }
 }
