@@ -18,7 +18,7 @@ namespace ASTeroid.Structs
      * 0x14-0x1F = 12 0x00 bytes?
      * 0x20-0x23 = length of music (offset + length)
      * 0x24-0x2F = 12 0xFF bytes?
-     * 0x30-0x31 = 1 (maybe a flag?)
+     * 0x30-0x31 = PCM flag such as in .wav header?
      * 0x32-0x33 = channel count
      * 0x34-0x37 = sample rate
      * 0x38-0x3B = bytes per second (sampleRate * bitDepth * channels) / 8
@@ -32,21 +32,21 @@ namespace ASTeroid.Structs
         /// Little Endian AST files are similar to .wav files, and use raw PCM. rSoundAst files in the .arc archive have much more complicated structures.
         /// Position 0x00 - 0x03
         /// </summary>
-        public const int LITTLE_ENDIAN_MAGIC = 0x4153544C;
+        public const int LITTLE_ENDIAN_MAGIC = 0x4C545341;
         /// <summary>
         /// The magic number (ASTB) used by the AST format on BE platforms such as PPC.
         /// BE support not implemented. Big Endian AST files, as in Dead Rising on the Xbox 360, use XMA encoding.
         /// Position 0x00 - 0x03
         /// </summary>
-        public const int BIG_ENDIAN_MAGIC = 0x41535442;
+        public const int BIG_ENDIAN_MAGIC = 0x42545341;
 
-        public int StartOffset;
-        public int ASTLength;
-        public int SampleRate;
-        public short BitDepth;
-        public int BytesPerSecond;
-        public short Channels;
-        public short Flag;
+        public int StartOffset { get; set; } 
+        public int ASTLength { get; set; }
+        public int SampleRate { get; set; }
+        public short BitDepth { get; set; }
+        public int BytesPerSecond { get; set; }
+        public short Channels { get; set; }
+        public short PCMFlag { get; set; }
 
         public const uint ZERO_PAD = 0x00000000;
         public const uint FFFF_PAD = 0xFFFFFFFF;

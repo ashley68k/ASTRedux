@@ -50,7 +50,7 @@ namespace ASTeroid
                 {
                     StartOffset = PositionReader.ReadInt32At(reader, 0x10),
                     ASTLength = PositionReader.ReadInt32At(reader, 0x20),
-                    Flag = PositionReader.ReadInt16At(reader, 0x30),
+                    PCMFlag = PositionReader.ReadInt16At(reader, 0x30),
                     Channels = PositionReader.ReadInt16At(reader, 0x32),
                     BytesPerSecond = PositionReader.ReadInt32At(reader, 0x38),
                     BitDepth = PositionReader.ReadInt16At(reader, 0x3E),
