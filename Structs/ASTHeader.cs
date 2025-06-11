@@ -49,7 +49,7 @@ namespace ASTeroid.Structs
         public short AudioChannels { get; private set; }
         public int AudioSampleRate { get; private set; }
         public int AudioBytesPerSecond { get; private set; }
-        public short AudioBlockAlign { get; private set; }
+        public short AudioBlockSize { get; private set; }
         public short AudioBitDepth { get; private set; }
         public short Unknown_3 { get; private set; }
 
@@ -70,7 +70,7 @@ namespace ASTeroid.Structs
             AudioChannels = data.Channels;
             AudioSampleRate = data.SampleRate;
             AudioBytesPerSecond = data.BytesPerSecond;
-            AudioBlockAlign = data.BlockAlign;
+            AudioBlockSize = data.BlockSize;
             AudioBitDepth = data.BitDepth;
         }
     }

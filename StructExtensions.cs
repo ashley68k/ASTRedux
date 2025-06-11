@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ASTeroid
 {
-    public static class Conversions
+    public static class StructExtensions
     {
         /// <summary>
         /// Converts a struct into a byte array for usage with BinaryWriter.
@@ -15,7 +15,7 @@ namespace ASTeroid
         /// <typeparam name="T">A generic type filtered for structs.</typeparam>
         /// <param name="input">A struct to be converted to a byte array</param>
         /// <returns>A byte array containing the memory layout of the struct</returns>
-        public static byte[] StructToByteArray<T>(this T input) where T : struct
+        public static byte[] ToByteArray<T>(this T input) where T : struct
         {
             int size = Marshal.SizeOf<T>();
             byte[] buffer = new byte[size];

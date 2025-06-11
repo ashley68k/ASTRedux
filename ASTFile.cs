@@ -25,22 +25,7 @@ namespace ASTeroid
         /// </summary>
         public const int BIG_ENDIAN_MAGIC = 0x42545341;
 
-        public const uint ZERO_PAD = 0x00000000;
-        public const uint FFFF_PAD = 0xFFFFFFFF;
-
         public AudioData AudioInfo { get; set; }
-
-        public const int MIN_FILE_SIZE = 0x40;
-
-        /// <summary>
-        /// Returns the expected file size of an AST object by adding audio length to audio start offset.
-        /// </summary>
-        /// <returns>Expected file size, or -1 on invalid length. Length check isn't rigorous.</returns>
-        public int GetFileSize()
-        {
-            int length = AudioInfo.StartOffset + AudioInfo.Length;
-            return length >= MIN_FILE_SIZE ? length : -1;
-        }
 
         /// <summary>
         /// Compares the integer magic in an AST stream versus the expected magic
@@ -92,7 +77,7 @@ namespace ASTeroid
                 BytesPerSecond = (fmt.SampleRate * fmt.BitsPerSample * fmt.Channels) / 8,
                 BitDepth = (short)fmt.BitsPerSample,
                 SampleRate = fmt.SampleRate,
-                BlockAlign = (short)(fmt.Channels * 2),
+                BlockSize = (short)(fmt.Channels * (fmt.BitsPerSample / 8)),
                 // always LE until BE support is added
                 Endianness = Endian.LITTLE_ENDIAN
             };

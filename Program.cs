@@ -56,11 +56,11 @@ namespace ASTeroid
 
             // inputting AST will always result in a standard audio file output
             // inputting common audio file will always result in an AST output.
-            if (Extensions.ASTExt.Contains(input.Extension))
+            if (FileExtensions.ASTExt.Contains(input.Extension))
             {
                 Processing.ProcessAST(input, output);
             }
-            else if (Extensions.CommonExt.Contains(input.Extension))
+            else if (FileExtensions.CommonExt.Contains(input.Extension))
             {
                 Processing.ProcessAudio(input, output);
             }

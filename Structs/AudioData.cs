@@ -35,6 +35,6 @@ namespace ASTeroid.Structs
         public int BytesPerSecond { get; set; }
         public short Channels { get; set; }
         public short PCMFlag { get; set; }
-        public short BlockAlign { get; set; }
+        public short BlockSize { get; set; }
     }
 }

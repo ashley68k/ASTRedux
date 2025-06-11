@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ASTeroid
 {
-    static class Extensions
+    static class FileExtensions
     {
         public static HashSet<string> ASTExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {

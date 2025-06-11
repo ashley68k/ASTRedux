@@ -34,7 +34,7 @@ namespace ASTeroid
                 ast.AudioInfo.SampleRate, 
                 ast.AudioInfo.Channels, 
                 ast.AudioInfo.BytesPerSecond, 
-                ast.AudioInfo.BlockAlign, 
+                ast.AudioInfo.BlockSize,
                 ast.AudioInfo.BitDepth
             );
 
@@ -62,7 +62,7 @@ namespace ASTeroid
 
             ASTHeader header = new ASTHeader(ast.AudioInfo);
 
-            writer.Write(header.StructToByteArray());
+            writer.Write(header.ToByteArray());
             writer.BaseStream.Position = ast.AudioInfo.StartOffset;
             writer.Write(pcmBuffer);
 
