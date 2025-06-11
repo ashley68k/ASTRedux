@@ -15,12 +15,34 @@ namespace ASTeroid
         public static void ProcessAST(FileInfo input, FileInfo? output)
         {
             using BinaryReader reader = new BinaryReader(input.OpenRead());
-
+            
             if (!ASTFile.ValidateMagic(reader))
             {
                 Console.WriteLine("Header doesn't match AST file!");
                 return;
             }
+
+            ASTFile ast = new ASTFile(
+                ASTFile.ParseData(reader)
+            );
+
+            reader.BaseStream.Position = ast.AudioInfo.StartOffset;
+            byte[] outputBuffer = reader.ReadBytes(ast.AudioInfo.Length);
+
+            WaveFormat outFormat = WaveFormat.CreateCustomFormat(
+                WaveFormatEncoding.Pcm, 
+                ast.AudioInfo.SampleRate, 
+                ast.AudioInfo.Channels, 
+                ast.AudioInfo.BytesPerSecond, 
+                ast.AudioInfo.BlockAlign, 
+                ast.AudioInfo.BitDepth
+            );
+
+            using WaveFileWriter writer = new(File.OpenWrite(output.FullName), outFormat);
+
+            writer.Write(outputBuffer);
+
+            Console.WriteLine("Audio conversion from .ast finished!");
         }
 
         public static void ProcessAudio(FileInfo input, FileInfo? output)

@@ -50,8 +50,8 @@ namespace ASTeroid
             }
             if(output.Exists)
             {
-                Console.WriteLine("Output file already exists!");
-                return;
+                Console.WriteLine("Output file already exists! Deleting old!");
+                output.Delete();
             }
 
             // inputting AST will always result in a standard audio file output

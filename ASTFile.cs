@@ -66,9 +66,9 @@ namespace ASTeroid
                 Length = PositionReader.ReadInt32At(reader, 0x20),
                 PCMFlag = PositionReader.ReadInt16At(reader, 0x30),
                 Channels = PositionReader.ReadInt16At(reader, 0x32),
+                SampleRate = PositionReader.ReadInt32At(reader, 0x34),
                 BytesPerSecond = PositionReader.ReadInt32At(reader, 0x38),
                 BitDepth = PositionReader.ReadInt16At(reader, 0x3E),
-                SampleRate = PositionReader.ReadInt32At(reader, 0x40),
                 // always LE until BE support is added
                 Endianness = Endian.LITTLE_ENDIAN
             };
