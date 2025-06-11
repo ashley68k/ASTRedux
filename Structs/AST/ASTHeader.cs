@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using ASTeroid.Enums;
+using ASTeroid.Structs.Format;
 
 namespace ASTeroid.Structs.AST
 {
@@ -44,12 +45,7 @@ namespace ASTeroid.Structs.AST
         public readonly uint FFFFPad_1 = 0xFFFFFFFF;
         public readonly uint FFFFPad_2 = 0xFFFFFFFF;
         public readonly uint FFFFPad_3 = 0xFFFFFFFF;
-        public short PCMFlag { get; private set; }
-        public short AudioChannels { get; private set; }
-        public int AudioSampleRate { get; private set; }
-        public int AudioBytesPerSecond { get; private set; }
-        public short AudioBlockSize { get; private set; }
-        public short AudioBitDepth { get; private set; }
+        public SampleFormat Format { get; set; }
         public short Unknown_3 { get; private set; }
 
         public readonly int Block_1 = 0xC0000;
@@ -65,12 +61,9 @@ namespace ASTeroid.Structs.AST
             Magic = data.Endianness == Endian.LITTLE_ENDIAN ? ASTFile.LITTLE_ENDIAN_MAGIC : ASTFile.BIG_ENDIAN_MAGIC;
             AudioOffset = data.StartOffset;
             AudioLength = data.Length;
-            PCMFlag = data.PCMFlag;
-            AudioChannels = data.Channels;
-            AudioSampleRate = data.SampleRate;
-            AudioBytesPerSecond = data.BytesPerSecond;
-            AudioBlockSize = data.BlockSize;
-            AudioBitDepth = data.BitDepth;
+
+            // just copy the astdata format
+            Format = data.Format;
         }
     }
 }

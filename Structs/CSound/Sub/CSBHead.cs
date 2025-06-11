@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace ASTeroid.Structs.CSound.Sub
 {
-    internal struct CSR
+    internal struct CSBHead
     {
+        public const int CSB_MAGIC = 0x20425343; // csb (CSoundBank?)
+
+        // each entry 0x40 long
     }
 }

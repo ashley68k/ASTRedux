@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using ASTeroid.Enums;
+using ASTeroid.Structs.Format;
 
 namespace ASTeroid.Structs.AST
 {
@@ -30,11 +31,7 @@ namespace ASTeroid.Structs.AST
         public Endian Endianness { get; set; }
         public int StartOffset { get; set; } 
         public int Length { get; set; }
-        public int SampleRate { get; set; }
-        public short BitDepth { get; set; }
-        public int BytesPerSecond { get; set; }
-        public short Channels { get; set; }
-        public short PCMFlag { get; set; }
-        public short BlockSize { get; set; }
+        
+        public SampleFormat Format { get; set; }
     }
 }

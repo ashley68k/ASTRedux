@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
 using ASTeroid.Enums;
 using ASTeroid.Structs.AST;
+using ASTeroid.Structs.Format;
 using ASTeroid.Utils;
 using NAudio.Wave;
 
@@ -54,11 +56,14 @@ namespace ASTeroid
             {
                 StartOffset = PositionReader.ReadInt32At(reader, 0x10),
                 Length = PositionReader.ReadInt32At(reader, 0x20),
-                PCMFlag = PositionReader.ReadInt16At(reader, 0x30),
-                Channels = PositionReader.ReadInt16At(reader, 0x32),
-                SampleRate = PositionReader.ReadInt32At(reader, 0x34),
-                BytesPerSecond = PositionReader.ReadInt32At(reader, 0x38),
-                BitDepth = PositionReader.ReadInt16At(reader, 0x3E),
+                Format = new SampleFormat(
+                    PositionReader.ReadUInt16At(reader, 0x30), // format flag
+                    PositionReader.ReadInt16At(reader, 0x32), // channels
+                    PositionReader.ReadInt32At(reader, 0x34), // sample rate
+                    PositionReader.ReadInt32At(reader, 0x38), // bytes per second
+                    PositionReader.ReadInt16At(reader, 0x3C), // block size
+                    PositionReader.ReadInt16At(reader, 0x3E) // bit depth
+                ),
                 // always LE until BE support is added
                 Endianness = Endian.LITTLE_ENDIAN
             };
@@ -74,15 +79,17 @@ namespace ASTeroid
             WaveFormat fmt = reader.WaveFormat;
             return new ASTData
             {
-                // dead rising ASTs always start at 0x800, and header is 0x40 anyways. length and PCM is also guaranteed
+                // dead rising ASTs always start at 0x800
                 StartOffset = 0x800,
                 Length = length,
-                PCMFlag = 1,
-                Channels = (short)fmt.Channels,
-                BytesPerSecond = (fmt.SampleRate * fmt.BitsPerSample * fmt.Channels) / 8,
-                BitDepth = (short)fmt.BitsPerSample,
-                SampleRate = fmt.SampleRate,
-                BlockSize = (short)(fmt.Channels * (fmt.BitsPerSample / 8)),
+                Format = new SampleFormat(
+                    (ushort)fmt.Encoding, // format flag
+                    (short)fmt.Channels, // channels
+                    fmt.SampleRate, // sample rate
+                    (fmt.SampleRate * fmt.BitsPerSample * fmt.Channels) / 8, // bytes per second
+                    (short)(fmt.Channels * (fmt.BitsPerSample / 8)), // block size
+                    (short)fmt.BitsPerSample // bit depth
+                ),
                 // always LE until BE support is added
                 Endianness = Endian.LITTLE_ENDIAN
             };

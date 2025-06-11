@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ASTeroid.Structs.CSound.Sub
 {
-    internal struct CSH
+    internal struct CSHEntry
     {
     }
 }

@@ -31,12 +31,12 @@ namespace ASTeroid
             byte[] outputBuffer = reader.ReadBytes(ast.AudioInfo.Length);
 
             WaveFormat outFormat = WaveFormat.CreateCustomFormat(
-                WaveFormatEncoding.Pcm, 
-                ast.AudioInfo.SampleRate, 
-                ast.AudioInfo.Channels, 
-                ast.AudioInfo.BytesPerSecond, 
-                ast.AudioInfo.BlockSize,
-                ast.AudioInfo.BitDepth
+                (WaveFormatEncoding)ast.AudioInfo.Format.FormatFlag, 
+                ast.AudioInfo.Format.SampleRate, 
+                ast.AudioInfo.Format.Channels, 
+                ast.AudioInfo.Format.BytesPerSecond, 
+                ast.AudioInfo.Format.BlockSize,
+                ast.AudioInfo.Format.BitDepth
             );
 
             using WaveFileWriter writer = new(File.OpenWrite(output.FullName), outFormat);
