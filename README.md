@@ -2,6 +2,26 @@
 
 A project to reverse engineer, document, and create tooling for Capcom's .ast audio format used in Dead Rising through binary analysis of the Windows executable and .ast files found in the game folder.
 
+## Installation
+
+Clone the repository or download the repository as a .zip, open the .sln in Visual Studio, and then build it. Alternatively, run `dotnet build` with your desired settings in the root directory through a terminal, especially for Mac and Linux users.
+
+## Usage/Examples
+
+ASTeroid is used through the CLI as such:
+
+`ASTeroid.exe --input INPUT --output OUTPUT`
+
+where INPUT is a relative or absolute path to an *.ast file or *mp3, wav, ogg, etc to be converted, and OUTPUT is the output path for the processed file. AST inputs will always convert to standard audio inputs and vice versa. If the output file already exists, it will be deleted and overwritten.
+
+for example, `ASTeroid.exe --input song.mp3 --output bgm030.ast`
+
+## Roadmap
+
+- Further mapping and documentation of *.ast
+
+- rSound and subtype support (eg *.rSoundSnd, *.rSoundSeg etc)
+
 ## Acknowledgements
 
 This project uses the [NAudio](https://github.com/naudio/NAudio) NuGet package for audio conversion and processing.
