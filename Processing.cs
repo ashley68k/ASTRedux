@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using ASTeroid.Structs;
+using ASTeroid.Structs.AST;
 using NAudio;
 using NAudio.Wave;
 
@@ -60,9 +61,9 @@ namespace ASTeroid
                 ASTFile.ParseData(pcmStream, pcmBuffer.Length)
             );
 
-            ASTHeader header = new ASTHeader(ast.AudioInfo);
+            ast.Header = new ASTHeader(ast.AudioInfo);
 
-            writer.Write(header.ToByteArray());
+            writer.Write(ast.Header.ToByteArray());
             writer.BaseStream.Position = ast.AudioInfo.StartOffset;
             writer.Write(pcmBuffer);
 

@@ -5,10 +5,9 @@ using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-
 using ASTeroid.Enums;
 
-namespace ASTeroid.Structs
+namespace ASTeroid.Structs.AST
 {
     /*
      * Header Format:
@@ -61,7 +60,7 @@ namespace ASTeroid.Structs
         public readonly short Block_6 = 0x1FCB;
         public readonly int Block_7 = -2;
 
-        public ASTHeader(AudioData data)
+        public ASTHeader(ASTData data)
         {
             Magic = data.Endianness == Endian.LITTLE_ENDIAN ? ASTFile.LITTLE_ENDIAN_MAGIC : ASTFile.BIG_ENDIAN_MAGIC;
             AudioOffset = data.StartOffset;

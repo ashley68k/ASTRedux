@@ -5,7 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using ASTeroid.Enums;
-using ASTeroid.Structs;
+using ASTeroid.Structs.AST;
+using ASTeroid.Utils;
 using NAudio.Wave;
 
 namespace ASTeroid
@@ -25,7 +26,11 @@ namespace ASTeroid
         /// </summary>
         public const int BIG_ENDIAN_MAGIC = 0x42545341;
 
-        public AudioData AudioInfo { get; set; }
+        public const int MAX_HEADER_SIZE = 0x800;
+
+        public ASTData AudioInfo { get; set; }
+
+        public ASTHeader Header { get; set; }
 
         /// <summary>
         /// Compares the integer magic in an AST stream versus the expected magic
@@ -43,9 +48,9 @@ namespace ASTeroid
         /// </summary>
         /// <param name="fileStream">A stream containing the binary data of an AST file</param>
         /// <returns>An AudioData object matching the input.</returns>
-        public static AudioData ParseData(BinaryReader reader)
+        public static ASTData ParseData(BinaryReader reader)
         {
-            return new AudioData
+            return new ASTData
             {
                 StartOffset = PositionReader.ReadInt32At(reader, 0x10),
                 Length = PositionReader.ReadInt32At(reader, 0x20),
@@ -64,10 +69,10 @@ namespace ASTeroid
         /// </summary>
         /// <param name="fileStream">A stream containing the binary data of an audio file</param>
         /// <returns>An AudioData object matching the input.</returns>
-        public static AudioData ParseData(Wave32To16Stream reader, int length)
+        public static ASTData ParseData(Wave32To16Stream reader, int length)
         {
             WaveFormat fmt = reader.WaveFormat;
-            return new AudioData
+            return new ASTData
             {
                 // dead rising ASTs always start at 0x800, and header is 0x40 anyways. length and PCM is also guaranteed
                 StartOffset = 0x800,
@@ -83,7 +88,7 @@ namespace ASTeroid
             };
         }
 
-        public ASTFile(AudioData inData)
+        public ASTFile(ASTData inData)
         {
             AudioInfo = inData;
         }

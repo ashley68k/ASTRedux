@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASTeroid
+namespace ASTeroid.Structs
 {
     public static class StructExtensions
     {
@@ -20,7 +20,7 @@ namespace ASTeroid
             int size = Marshal.SizeOf<T>();
             byte[] buffer = new byte[size];
 
-            IntPtr ptr = Marshal.AllocHGlobal(size);
+            nint ptr = Marshal.AllocHGlobal(size);
             try
             {
                 Marshal.StructureToPtr(input, ptr, false);

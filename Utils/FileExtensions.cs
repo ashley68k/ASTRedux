@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASTeroid
+namespace ASTeroid.Utils
 {
     static class FileExtensions
     {

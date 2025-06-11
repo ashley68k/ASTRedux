@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASTeroid
+namespace ASTeroid.Utils
 {
     /// <summary>
     /// A wrapper class to cleanly read values at a specific offset in a file when using object initializers.

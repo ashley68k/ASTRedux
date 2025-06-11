@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ASTeroid.Enums;
 
-namespace ASTeroid.Structs
+namespace ASTeroid.Structs.AST
 {
     /*
      * Header Format:
@@ -25,7 +25,7 @@ namespace ASTeroid.Structs
      * 0x3C-0x3D = unknown (always 4) (short)
      * 0x3E-0x3F = bit-depth (short)
      */
-    public struct AudioData
+    public struct ASTData
     {
         public Endian Endianness { get; set; }
         public int StartOffset { get; set; } 
