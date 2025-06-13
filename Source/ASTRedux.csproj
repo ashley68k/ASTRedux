@@ -23,4 +23,9 @@
     <BaseIntermediateOutputPath>../obj/</BaseIntermediateOutputPath>
   </PropertyGroup>
   
+  <!--Might not be necessary anymore. I don't even think this worked-->
+  <PropertyGroup>
+	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+  
 </Project>
