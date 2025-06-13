@@ -1,4 +1,7 @@
 # configuration file for dotnet-releaser
+
+profile = custom
+
 [msbuild]
 project = "ASTRedux.sln"
 [github]
