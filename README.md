@@ -8,13 +8,13 @@ Clone the repository or download the repository as a .zip, open the .sln in Visu
 
 ## Usage/Examples
 
-ASTeroid is used through the CLI as such:
+ASTRedux is used through the CLI as such:
 
-`ASTeroid.exe --input INPUT --output OUTPUT`
+`ASTRedux.exe --input INPUT --output OUTPUT`
 
 where INPUT is a relative or absolute path to an *.ast, rSoundSnd (not yet implemented) file or *mp3, wav, ogg, etc to be converted, and OUTPUT is the output path for the processed file. AST inputs will always convert to standard audio inputs and vice versa. If the output file already exists, it will be deleted and overwritten.
 
-for example, `ASTeroid.exe --input song.mp3 --output bgm030.ast`
+for example, `ASTRedux.exe --input song.mp3 --output bgm030.ast`
 
 ## Roadmap
 
