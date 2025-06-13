@@ -1,6 +1,6 @@
 # configuration file for dotnet-releaser
 [msbuild]
-project = "src/ASTRedux.csproj"
+project = "ASTRedux.sln"
 [github]
 user = "ashley68k"
 repo = "ASTRedux"
