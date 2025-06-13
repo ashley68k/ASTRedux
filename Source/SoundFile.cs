@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ASTeroid.Structs.CSound.Sub;
+using ASTRedux.Structs.CSound.Sub;
 
-namespace ASTeroid
+namespace ASTRedux
 {
     // to make this more extendable, in the future we should consider having ast and sound inherit from a base class and further abstract everything
     public class SoundFile

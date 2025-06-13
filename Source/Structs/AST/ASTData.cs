@@ -4,10 +4,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using ASTeroid.Enums;
-using ASTeroid.Structs.Format;
+using ASTRedux.Enums;
+using ASTRedux.Structs.Format;
 
-namespace ASTeroid.Structs.AST
+namespace ASTRedux.Structs.AST
 {
     /*
      * Header Format:

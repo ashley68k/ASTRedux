@@ -5,13 +5,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
-using ASTeroid.Enums;
-using ASTeroid.Structs.AST;
-using ASTeroid.Structs.Format;
-using ASTeroid.Utils;
+using ASTRedux.Enums;
+using ASTRedux.Structs.AST;
+using ASTRedux.Structs.Format;
+using ASTRedux.Utils;
 using NAudio.Wave;
 
-namespace ASTeroid
+namespace ASTRedux
 {
     internal class ASTFile
     {

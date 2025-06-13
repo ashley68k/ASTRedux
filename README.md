@@ -1,4 +1,4 @@
-# ASTeroid
+# ASTRedux
 
 A project to reverse engineer, document, and create tooling for Capcom's .ast and *.rSoundSnd audio formats used in Dead Rising through binary analysis of the Windows executable and data files found in the game folder.
 

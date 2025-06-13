@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASTeroid.Structs.CSound.Sub
+namespace ASTRedux.Structs.CSound.Sub
 {
     internal struct CSHHead
     {

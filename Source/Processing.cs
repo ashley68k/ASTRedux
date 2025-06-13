@@ -4,12 +4,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using ASTeroid.Structs;
-using ASTeroid.Structs.AST;
+using ASTRedux.Structs;
+using ASTRedux.Structs.AST;
 using NAudio;
 using NAudio.Wave;
 
-namespace ASTeroid
+namespace ASTRedux
 {
     static class Processing
     {

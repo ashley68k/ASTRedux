@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASTeroid.Structs.Format
+namespace ASTRedux.Structs.Format
 {
     // directly analogous to WAVEFORMAT
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

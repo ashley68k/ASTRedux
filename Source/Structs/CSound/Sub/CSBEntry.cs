@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ASTeroid.Structs.Format;
+using ASTRedux.Structs.Format;
 
-namespace ASTeroid.Structs.CSound.Sub
+namespace ASTRedux.Structs.CSound.Sub
 {
     internal struct CSBEntry
     {

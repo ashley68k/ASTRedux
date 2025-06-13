@@ -1,8 +1,8 @@
-﻿using ASTeroid.Structs;
-using ASTeroid.Utils;
+﻿using ASTRedux.Structs;
+using ASTRedux.Utils;
 using System.CommandLine;
 
-namespace ASTeroid
+namespace ASTRedux
 {
     internal class Program
     {
