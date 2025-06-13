@@ -1,0 +1,24 @@
+# configuration file for dotnet-releaser
+[msbuild]
+project = "ASTRedux.sln"
+[github]
+user = "ashley68k"
+repo = "ASTRedux"
+
+# only x86-64 CPUs are supported as build targets at the moment.
+[[pack]]
+rid = ["win-x64"]
+kinds = ["zip"]
+[[pack]]
+rid = ["linux-x64"]
+kinds = ["deb", "tar"]
+[[pack]]
+rid = ["rhel-x64"]
+kinds = ["rpm", "tar"]
+[[pack]]
+rid = ["osx-x64"]
+kinds = ["tar"]
+
+# this isn't a library dawg...
+[nuget]
+publish = false
