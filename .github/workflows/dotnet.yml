@@ -21,7 +21,7 @@ jobs:
         dotnet-version: 9.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build, Tests, and Publish (on push tag)
+    - name: Build and Publish (on push tag)
       shell: bash
       run: |
         dotnet tool install --global dotnet-releaser
