@@ -4,9 +4,10 @@ name: .NET
 
 on:
   push:
-    branches: [ "master" ]
-    tags: [ '*' ]
-
+    branches:
+      - master
+    tags:
+      - '*' # run on all tags being pushed
 jobs:
   build:
 
