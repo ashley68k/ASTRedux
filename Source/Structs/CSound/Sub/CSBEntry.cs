@@ -9,6 +9,6 @@ namespace ASTRedux.Structs.CSound.Sub
 {
     internal struct CSBEntry
     {
-        public SampleFormat Format { get; private set; }   
+        public AudioFormat Format { get; private set; }   
     }
 }

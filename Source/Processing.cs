@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using ASTRedux.Structs;
 using ASTRedux.Structs.AST;
 using ASTRedux.Utils;
-using NAudio;
-using NAudio.Wave;
+//using NAudio;
+//using NAudio.Wave;
+using ManagedBass;
 
 namespace ASTRedux
 {
@@ -16,59 +18,88 @@ namespace ASTRedux
     {
         public static void ProcessAST(FileInfo input, FileInfo output)
         {
-            using BinaryReader reader = new BinaryReader(input.OpenRead());
-            
+            using BinaryReader reader = new(input.OpenRead());
+            using BinaryWriter writer = new(output.OpenRead());
+            using MemoryStream ms = new();
+
             if (!ASTFile.ValidateMagic(reader))
             {
                 Console.WriteLine("Header doesn't match AST file!");
                 return;
             }
 
-            ASTFile ast = new ASTFile(
-                ASTFile.ParseData(reader)
-            );
+            ASTFile ast = new ASTFile(reader);
 
             reader.BaseStream.Position = ast.AudioInfo.StartOffset;
             byte[] outputBuffer = reader.ReadBytes(ast.AudioInfo.Length);
 
-            WaveFormat outFormat = WaveFormat.CreateCustomFormat(
-                (WaveFormatEncoding)ast.AudioInfo.Format.FormatFlag, 
-                ast.AudioInfo.Format.SampleRate, 
-                ast.AudioInfo.Format.Channels, 
-                ast.AudioInfo.Format.BytesPerSecond, 
-                ast.AudioInfo.Format.BlockSize,
-                ast.AudioInfo.Format.BitDepth
-            );
+            using WaveFileWriter memWriter = new(ms, AudioHelpers.WaveFormatFromAudioFormat(ast.AudioInfo.Format));
+            memWriter.Write(outputBuffer, outputBuffer.Length);
 
-            using WaveFileWriter writer = new(File.OpenWrite(output.FullName), outFormat);
+            writer.Write(ms.ToArray());
 
-            writer.Write(outputBuffer);
-
-            Console.WriteLine($"Audio conversion from .ast finished! Audio duration is {AudioHelpers.GetAudioLength(ast.AudioInfo.Format.SampleRate, ast.AudioInfo.Format.BlockSize, ast.AudioInfo.Length):mm\\:ss\\.ff}.");
+            Bass.Free();
         }
 
         public static void ProcessAudio(FileInfo input, FileInfo output)
         {
-            using AudioFileReader audioInput = new(input.FullName);
-            using BinaryReader reader = new BinaryReader(input.OpenRead());
-            using BinaryWriter writer = new BinaryWriter(File.OpenWrite(output.FullName));
+            using BinaryWriter writer = new(File.OpenWrite(output.FullName));
 
-            using var pcmStream = new Wave32To16Stream(audioInput);
-            using var ms = new MemoryStream();
-            pcmStream.CopyTo(ms);
-            byte[] pcmBuffer = ms.ToArray();
+            int streamHnd = Bass.CreateStream(input.FullName, 0, 0, BassFlags.Decode | BassFlags.Prescan);
 
-            ASTFile ast = new(
-                ASTFile.ParseData(pcmStream, pcmBuffer.Length)
-            );
+            if (streamHnd != 0)
+            {
+                ChannelInfo ch = Bass.ChannelGetInfo(streamHnd);
+                int totalLength = Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) <= int.MaxValue ? (int)Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) : 0;
 
-            ast.Header = new ASTHeader(ast.AudioInfo);
+                if (totalLength == 0)
+                {
+                    Console.WriteLine("Invalid PCM stream!");
+                    Bass.Free();
+                    return;
+                }
 
-            writer.Write(ast.Header.ToByteArray());
-            writer.BaseStream.Position = ast.AudioInfo.StartOffset;
-            writer.Write(pcmBuffer);
+                byte[] pcmBuffer = new byte[totalLength];
+                int bytesRead = Bass.ChannelGetData(streamHnd, pcmBuffer, totalLength);
+                if (bytesRead > 0)
+                {
+                    ASTFile ast = new
+                    (
+                        new WaveFormat
+                        (
+                            ch.Frequency,
+                            16,
+                            ch.Channels
+                        ),
+                        totalLength
+                    );
 
-            Console.WriteLine($"Audio conversion from .ast finished! Audio duration is {AudioHelpers.GetAudioLength(ast.AudioInfo.Format.SampleRate, ast.AudioInfo.Format.BlockSize, ast.AudioInfo.Length):mm\\:ss\\.ff}.");
+                    // TODO: Wrap in a serialize function
+                    writer.Write(ast.Header.ToByteArray());
+                    writer.BaseStream.Position = ast.AudioInfo.StartOffset;
+                    writer.Write(pcmBuffer);
+
+                    //Console.WriteLine($"Audio conversion to .ast finished! Audio duration is {AudioHelpers.GetAudioLength(ast.AudioInfo.Format.SampleRate, ast.AudioInfo.Format.BlockSize, ast.AudioInfo.Length):mm\\:ss\\.ff}.");
+                }
+                else
+                {
+                    Errors err = Bass.LastError;
+                    switch(err)
+                    {
+                        // add more as needed/relevant
+                        case Errors.FileFormat:
+                            Console.WriteLine("Invalid input extension.");
+                            break;
+                        default:
+                            Console.WriteLine($"BASS Error! Code #{err}");
+                            break;
+                    }
+                    Bass.Free();
+                    return;
+                }
+            }
+
+            Bass.Free();
         }
     }
 }

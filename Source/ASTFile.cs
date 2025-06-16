@@ -9,7 +9,8 @@ using ASTRedux.Enums;
 using ASTRedux.Structs.AST;
 using ASTRedux.Structs.Format;
 using ASTRedux.Utils;
-using NAudio.Wave;
+//using NAudio.Wave;
+using ManagedBass;
 
 namespace ASTRedux
 {
@@ -46,18 +47,42 @@ namespace ASTRedux
         }
 
         /// <summary>
-        /// Creates an AudioData object from an input AST.
+        /// Creates an instance of ASTFile given an audio input from BASS
         /// </summary>
-        /// <param name="fileStream">A stream containing the binary data of an AST file</param>
-        /// <returns>An AudioData object matching the input.</returns>
-        public static ASTData ParseData(BinaryReader reader)
+        /// <param name="fmt">A ManagedBass WaveFormat object describing the format for the AST file to take on</param>
+        /// <param name="byteLength">Length in bytes of the decoded audio buffer</param>
+        public ASTFile(WaveFormat fmt, int byteLength)
         {
-            return new ASTData
+            AudioInfo = new ASTData
+            {
+                StartOffset = 0x800,
+                Length = byteLength,
+                Format = new AudioFormat(
+                    (short)fmt.Encoding,
+                    (short)fmt.Channels,
+                    fmt.SampleRate,
+                    fmt.AverageBytesPerSecond,
+                    (short)fmt.BlockAlign,
+                    (short)fmt.BitsPerSample
+                ),
+                // always LE until BE support is added
+                Endianness = Endian.LITTLE_ENDIAN
+            };
+            Header = new ASTHeader(AudioInfo);
+        }
+
+        /// <summary>
+        /// Creates an instance of ASTFile given an AST binaryreader input
+        /// </summary>
+        /// <param name="reader">A BinaryReader containing the AST binary data as a stream</param>
+        public ASTFile(BinaryReader reader)
+        {
+            AudioInfo = new ASTData
             {
                 StartOffset = PositionReader.ReadInt32At(reader, 0x10),
                 Length = PositionReader.ReadInt32At(reader, 0x20),
-                Format = new SampleFormat(
-                    PositionReader.ReadUInt16At(reader, 0x30), // format flag
+                Format = new AudioFormat(
+                    PositionReader.ReadInt16At(reader, 0x30), // format flag
                     PositionReader.ReadInt16At(reader, 0x32), // channels
                     PositionReader.ReadInt32At(reader, 0x34), // sample rate
                     PositionReader.ReadInt32At(reader, 0x38), // bytes per second
@@ -67,37 +92,7 @@ namespace ASTRedux
                 // always LE until BE support is added
                 Endianness = Endian.LITTLE_ENDIAN
             };
-        }
-
-        /// <summary>
-        /// Creates an AudioData object from an input audio file.
-        /// </summary>
-        /// <param name="fileStream">A stream containing the binary data of an audio file</param>
-        /// <returns>An AudioData object matching the input.</returns>
-        public static ASTData ParseData(Wave32To16Stream reader, int length)
-        {
-            WaveFormat fmt = reader.WaveFormat;
-            return new ASTData
-            {
-                // dead rising ASTs always start at 0x800
-                StartOffset = 0x800,
-                Length = length,
-                Format = new SampleFormat(
-                    (ushort)fmt.Encoding, // format flag
-                    (short)fmt.Channels, // channels
-                    fmt.SampleRate, // sample rate
-                    (fmt.SampleRate * fmt.BitsPerSample * fmt.Channels) / 8, // bytes per second
-                    (short)(fmt.Channels * (fmt.BitsPerSample / 8)), // block size
-                    (short)fmt.BitsPerSample // bit depth
-                ),
-                // always LE until BE support is added
-                Endianness = Endian.LITTLE_ENDIAN
-            };
-        }
-
-        public ASTFile(ASTData inData)
-        {
-            AudioInfo = inData;
+            Header = new ASTHeader(AudioInfo);
         }
     }
 }

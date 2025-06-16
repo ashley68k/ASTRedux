@@ -1,5 +1,6 @@
 ﻿using ASTRedux.Structs;
 using ASTRedux.Utils;
+using ManagedBass;
 using System.CommandLine;
 using System.Diagnostics;
 
@@ -56,6 +57,11 @@ namespace ASTRedux
         /// <param name="output">A FileInfo object describing a file to be output on the CLI</param>
         static void FileValidate(FileInfo input, FileInfo output)
         {
+            if (!Bass.Init())
+            {
+                Console.WriteLine("Couldn't initialize BASS!");
+            }
+
             if (input.FullName == output.FullName)
             {
                 Console.WriteLine("Attempted output to input file!");
@@ -75,17 +81,18 @@ namespace ASTRedux
 
             // inputting AST will always result in a standard audio file output
             // inputting common audio file will always result in an AST output.
-            if (FileExtensions.ASTExt.Contains(input.Extension) && FileExtensions.CommonExt.Contains(output.Extension))
+            if (FileExtensions.ASTExt.Contains(input.Extension) && output.Extension == ".wav")
             {
                 Processing.ProcessAST(input, output);
             }
-            else if (FileExtensions.CommonExt.Contains(input.Extension) && FileExtensions.ASTExt.Contains(output.Extension))
+            else if(FileExtensions.ASTExt.Contains(output.Extension))
             {
+                // let BASS handle input extension, as plugins can change support
                 Processing.ProcessAudio(input, output);
             }
-            else 
+            else
             {
-                Console.WriteLine($"Invalid conversion from '{input.Extension}' to '{output.Extension}'");
+                Console.WriteLine("Invalid output extension.");
             }
             return;
         }

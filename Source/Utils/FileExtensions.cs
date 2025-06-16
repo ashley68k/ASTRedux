@@ -8,19 +8,14 @@ namespace ASTRedux.Utils
 {
     static class FileExtensions
     {
-        public static HashSet<string> ASTExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public static HashSet<string> ASTExt = new(StringComparer.OrdinalIgnoreCase)
         {
             ".ast", ".rSoundAst"
         };
 
-        public static HashSet<string> SoundExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public static HashSet<string> SoundExt = new(StringComparer.OrdinalIgnoreCase)
         {
             ".rSoundSnd"
-        };
-
-        public static HashSet<string> CommonExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".wav"
         };
     }
 }

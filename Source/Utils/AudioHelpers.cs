@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ASTRedux.Structs.Format;
+using ManagedBass;
 
 namespace ASTRedux.Utils
 {
@@ -21,6 +23,15 @@ namespace ASTRedux.Utils
             // thus, samples over sampleRate, for instance 88200 samples / 44100 rate = 2 when simplified
             // length is casted to double, because dividing int by int results in an int, meaning audio length is always floored.
             return TimeSpan.FromSeconds((double)length / sampleSize / sampleRate);
+        }
+
+        public static WaveFormat WaveFormatFromAudioFormat(AudioFormat fmt)
+        {
+            return new WaveFormat(
+                fmt.SampleRate,
+                fmt.BitDepth,
+                fmt.Channels
+            );
         }
     }
 }

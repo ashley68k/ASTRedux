@@ -32,6 +32,6 @@ namespace ASTRedux.Structs.AST
         public int StartOffset { get; set; } 
         public int Length { get; set; }
         
-        public SampleFormat Format { get; set; }
+        public AudioFormat Format { get; set; }
     }
 }

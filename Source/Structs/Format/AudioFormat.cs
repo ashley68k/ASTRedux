@@ -9,16 +9,16 @@ namespace ASTRedux.Structs.Format
 {
     // directly analogous to WAVEFORMAT
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct SampleFormat
+    public struct AudioFormat
     {
-        public ushort FormatFlag { get; set; }
+        public short FormatFlag { get; set; }
         public short Channels { get; set; }
         public int SampleRate { get; set; }
         public int BytesPerSecond { get; set; }
         public short BlockSize { get; set; }
         public short BitDepth { get; set; }
 
-        public SampleFormat(ushort formatFlag, short channels, int sampleRate, int bps, short blockSize, short bitDepth) 
+        public AudioFormat(short formatFlag, short channels, int sampleRate, int bps, short blockSize, short bitDepth) 
         { 
             FormatFlag = formatFlag;
             Channels = channels;

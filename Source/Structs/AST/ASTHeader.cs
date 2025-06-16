@@ -24,28 +24,28 @@ namespace ASTRedux.Structs.AST
      * 0x32-0x33 = channel count (short)
      * 0x34-0x37 = sample rate (int)
      * 0x38-0x3B = bytes per second (sampleRate * bitDepth * channels) / 8 (int)
-     * 0x3C-0x3D = unknown (always 4) (short)
+     * 0x3C-0x3D = sample size (short)
      * 0x3E-0x3F = bit-depth (short)
      * I suspect the rest is some format identifier, guid block, etc. Regardless it's all same between files despite one value which changes nothing when altered. This section should still be reversed more.
      * 
      * Packed this way we can just create an ASTHeader and send it off.
      */
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct ASTHeader
+    internal struct ASTHeader(ASTData data)
     {
-        public int Magic { get; private set; }
+        public int Magic { get; private set; } = data.Endianness == Endian.LITTLE_ENDIAN ? ASTFile.LITTLE_ENDIAN_MAGIC : ASTFile.BIG_ENDIAN_MAGIC;
         public readonly int ZeroPad_1 = 0x00000000;
         public readonly int Unknown_1 = 0x00000201;
         public readonly int Unknown_2 = 0x00000001;
-        public int AudioOffset { get; private set; }
+        public int AudioOffset { get; private set; } = data.StartOffset;
         public readonly int ZeroPad_2 = 0x00000000;
         public readonly int ZeroPad_3 = 0x00000000;
         public readonly int ZeroPad_4 = 0x00000000;
-        public int AudioLength { get; private set; }
+        public int AudioLength { get; private set; } = data.Length;
         public readonly uint FFFFPad_1 = 0xFFFFFFFF;
         public readonly uint FFFFPad_2 = 0xFFFFFFFF;
         public readonly uint FFFFPad_3 = 0xFFFFFFFF;
-        public SampleFormat Format { get; set; }
+        public AudioFormat Format { get; set; } = data.Format;
         public short Unknown_3 { get; private set; }
 
         public readonly int Block_1 = 0xC0000;
@@ -55,15 +55,5 @@ namespace ASTRedux.Structs.AST
         public readonly short Block_5 = 0x0;
         public readonly short Block_6 = 0x1FCB;
         public readonly int Block_7 = -2;
-
-        public ASTHeader(ASTData data)
-        {
-            Magic = data.Endianness == Endian.LITTLE_ENDIAN ? ASTFile.LITTLE_ENDIAN_MAGIC : ASTFile.BIG_ENDIAN_MAGIC;
-            AudioOffset = data.StartOffset;
-            AudioLength = data.Length;
-
-            // just copy the astdata format
-            Format = data.Format;
-        }
     }
 }
