@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace ASTRedux.Structs.CSound;
 
-namespace ASTRedux.Structs.CSound
+internal struct CSoundData
 {
-    internal struct CSoundData
-    {
-    }
 }

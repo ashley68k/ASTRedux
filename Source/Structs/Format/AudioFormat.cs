@@ -1,31 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
-namespace ASTRedux.Structs.Format
+namespace ASTRedux.Structs.Format;
+
+// directly analogous to WAVEFORMAT
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+internal struct AudioFormat(short formatFlag, short channels, int sampleRate, int bps, short blockSize, short bitDepth)
 {
-    // directly analogous to WAVEFORMAT
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct AudioFormat
-    {
-        public short FormatFlag { get; set; }
-        public short Channels { get; set; }
-        public int SampleRate { get; set; }
-        public int BytesPerSecond { get; set; }
-        public short BlockSize { get; set; }
-        public short BitDepth { get; set; }
-
-        public AudioFormat(short formatFlag, short channels, int sampleRate, int bps, short blockSize, short bitDepth) 
-        { 
-            FormatFlag = formatFlag;
-            Channels = channels;
-            SampleRate = sampleRate;
-            BytesPerSecond = bps;
-            BlockSize = blockSize;
-            BitDepth = bitDepth;
-        }
-    }
+    public short FormatFlag { get; set; } = formatFlag;
+    public short Channels { get; set; } = channels;
+    public int SampleRate { get; set; } = sampleRate;
+    public int BytesPerSecond { get; set; } = bps;
+    public short BlockSize { get; set; } = blockSize;
+    public short BitDepth { get; set; } = bitDepth;
 }

@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace ASTRedux.Utils;
 
-namespace ASTRedux.Utils
+internal static class FileExtensions
 {
-    static class FileExtensions
+    public static HashSet<string> ASTExt = new(StringComparer.OrdinalIgnoreCase)
     {
-        public static HashSet<string> ASTExt = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".ast", ".rSoundAst"
-        };
+        ".ast", ".rSoundAst"
+    };
 
-        public static HashSet<string> SoundExt = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".rSoundSnd"
-        };
-    }
+    public static HashSet<string> SoundExt = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".rSoundSnd"
+    };
 }

@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace ASTRedux.Structs.CSound.Sub;
 
-namespace ASTRedux.Structs.CSound.Sub
+internal struct CSRHead
 {
-    internal struct CSRHead
-    {
-        public const int CSR_MAGIC = 0x20525343; // csr (CSoundResource?)
-    }
+    public const int CSR_MAGIC = 0x20525343; // csr (CSoundRequest?)
 }
