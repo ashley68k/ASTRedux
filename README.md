@@ -7,24 +7,15 @@ A project to reverse engineer, document, and create tooling for Capcom's .ast an
 Go to the releases section, go to the latest version, and download the suitable archive for your OS/CPU architecture.
 
 Alternatively to install the latest development version, clone the repository or download the repository as a .zip, open the .sln in Visual Studio or Rider, and then build it. 
-You may also run `dotnet build` with your desired settings in the root directory through a terminal, especially for Mac and Linux users.
+You may also run `dotnet build` with your desired settings in the root directory through a terminal.
 
-WARNING: This program is entirely developed and tested on Windows.
-Cross-platform support and testing can not be guaranteed, especially for OSX.
-If you experience problems, please indicate the platform and CPU architecture in your issue reports.
-All release builds are not self-contained for compatibility, and will require the .NET 9 runtime to be installed on your machine.
+NAudio branch only supports Windows with wav exports.
 
 ## Usage/Examples
 
 ASTRedux is used through the CLI as such:
 
 `ASTRedux.exe --input INPUT --output OUTPUT`
-
-or 
-
-`./ASTRedux --input INPUT --output OUTPUT`
-
-for Mac and Linux users.
 
 where INPUT is a relative or absolute path to an *.ast, rSoundSnd (not yet implemented) file or *mp3, wav, ogg, etc to be converted, and OUTPUT is the output path for the processed file. AST inputs will always convert to standard audio inputs and vice versa. If the output file already exists, it will be deleted and overwritten.
 
@@ -38,7 +29,7 @@ for example, `ASTRedux.exe --input song.mp3 --output bgm030.ast`
 
 ## Acknowledgements
 
-This project uses the [NAudio](https://github.com/naudio/NAudio) NuGet package for audio conversion and processing.
+This project uses [CSCore](https://github.com/filoe/cscore) for audio conversion and processing.
 
 Thank you to the developers of Ghidra and HxD for providing excellent tools for analyzing executables and binary formats.
 

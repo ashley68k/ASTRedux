@@ -20,7 +20,7 @@ namespace ASTRedux.Utils
 
         public static HashSet<string> CommonExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            ".mp3", ".wav", ".ogg", ".flac"
+            ".wav"
         };
     }
 }
