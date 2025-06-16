@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ASTRedux.Structs;
 using ASTRedux.Structs.AST;
+using ASTRedux.Utils;
 using NAudio;
 using NAudio.Wave;
 
@@ -43,7 +44,7 @@ namespace ASTRedux
 
             writer.Write(outputBuffer);
 
-            Console.WriteLine("Audio conversion from .ast finished!");
+            Console.WriteLine($"Audio conversion from .ast finished! Audio duration is {AudioHelpers.GetAudioLength(ast.AudioInfo.Format.SampleRate, ast.AudioInfo.Format.BlockSize, ast.AudioInfo.Length):mm\\:ss\\.ff}.");
         }
 
         public static void ProcessAudio(FileInfo input, FileInfo? output)
@@ -67,7 +68,7 @@ namespace ASTRedux
             writer.BaseStream.Position = ast.AudioInfo.StartOffset;
             writer.Write(pcmBuffer);
 
-            Console.WriteLine("Audio conversion to .ast finished!");
+            Console.WriteLine($"Audio conversion from .ast finished! Audio duration is {AudioHelpers.GetAudioLength(ast.AudioInfo.Format.SampleRate, ast.AudioInfo.Format.BlockSize, ast.AudioInfo.Length):mm\\:ss\\.ff}.");
         }
     }
 }
