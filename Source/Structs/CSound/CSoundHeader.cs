@@ -25,14 +25,15 @@ namespace ASTRedux.Structs.CSound
 
         public uint FFPad_2 = Constants.FFFF_PAD;
 
-        CSRHead csr = new();
+        // unimplemented for now
+       /* CSRHead csr = new();
         List<CSREntry> csrEntries = new List<CSREntry>();
 
         CSHHead csh = new();
         List<CSHEntry> cshEntries = new List<CSHEntry>();
 
         CSBHead csb = new();
-        List<CSBEntry> csbEntries = new List<CSBEntry>();
+        List<CSBEntry> csbEntries = new List<CSBEntry>(); */
 
         public CSoundHeader()
         {
