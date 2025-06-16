@@ -14,7 +14,7 @@ namespace ASTRedux
 {
     static class Processing
     {
-        public static void ProcessAST(FileInfo input, FileInfo? output)
+        public static void ProcessAST(FileInfo input, FileInfo output)
         {
             using BinaryReader reader = new BinaryReader(input.OpenRead());
             
@@ -47,7 +47,7 @@ namespace ASTRedux
             Console.WriteLine($"Audio conversion from .ast finished! Audio duration is {AudioHelpers.GetAudioLength(ast.AudioInfo.Format.SampleRate, ast.AudioInfo.Format.BlockSize, ast.AudioInfo.Length):mm\\:ss\\.ff}.");
         }
 
-        public static void ProcessAudio(FileInfo input, FileInfo? output)
+        public static void ProcessAudio(FileInfo input, FileInfo output)
         {
             using AudioFileReader audioInput = new(input.FullName);
             using BinaryReader reader = new BinaryReader(input.OpenRead());

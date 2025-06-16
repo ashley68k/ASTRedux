@@ -19,7 +19,8 @@ namespace ASTRedux.Utils
         {
             // length / blockSize = samples in buffer
             // thus, samples over sampleRate, for instance 88200 samples / 44100 rate = 2 when simplified
-            return TimeSpan.FromSeconds((length / sampleSize) / sampleRate);
+            // length is casted to double, because dividing int by int results in an int, meaning audio length is always floored.
+            return TimeSpan.FromSeconds((double)length / sampleSize / sampleRate);
         }
     }
 }

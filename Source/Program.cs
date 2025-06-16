@@ -13,19 +13,25 @@ namespace ASTRedux
         /// <returns>Invocation of command</returns>
         static async Task<int> Main(string[] args)
         {
-            var inputOption = new Option<FileInfo?>(
+            var inputOption = new Option<FileInfo>(
                 name: "--input",
-                description: "The file to be processed");
+                description: "The file to be processed")
+                {
+                    IsRequired = true
+                };
 
-            var outputOption = new Option<FileInfo?>(
+            var outputOption = new Option<FileInfo>(
                 name: "--output",
-                description: "Filename to be output");
+                description: "Filename to be output")
+                {
+                    IsRequired = true
+                };
 
             var rootCommand = new RootCommand("ASTeroid");
             rootCommand.AddOption(inputOption);
             rootCommand.AddOption(outputOption);
 
-            rootCommand.SetHandler((FileInfo? input, FileInfo? output) =>
+            rootCommand.SetHandler((FileInfo input, FileInfo output) =>
             {
                 if ((input != null) && (output != null))
                 {
@@ -42,8 +48,14 @@ namespace ASTRedux
         /// </summary>
         /// <param name="input">A FileInfo object describing a file given on the CLI</param>
         /// <param name="output">A FileInfo object describing a file to be output on the CLI</param>
-        static void FileValidate(FileInfo input, FileInfo? output)
+        static void FileValidate(FileInfo input, FileInfo output)
         {
+            if (input.FullName == output.FullName)
+            {
+                Console.WriteLine("Attempted output to input file!");
+                return;
+            }
+
             if (!input.Exists)
             {
                 Console.WriteLine("Input file doesn't exist!");
@@ -51,23 +63,23 @@ namespace ASTRedux
             }
             if(output.Exists)
             {
-                Console.WriteLine("Output file already exists! Deleting old!");
-                output.Delete();
+                Console.WriteLine("Output file already exists!");
+                return;
             }
 
             // inputting AST will always result in a standard audio file output
             // inputting common audio file will always result in an AST output.
-            if (FileExtensions.ASTExt.Contains(input.Extension))
+            if (FileExtensions.ASTExt.Contains(input.Extension) && FileExtensions.CommonExt.Contains(output.Extension))
             {
                 Processing.ProcessAST(input, output);
             }
-            else if (FileExtensions.CommonExt.Contains(input.Extension))
+            else if (FileExtensions.CommonExt.Contains(input.Extension) && FileExtensions.ASTExt.Contains(output.Extension))
             {
                 Processing.ProcessAudio(input, output);
             }
             else 
             {
-                Console.WriteLine($"Extension input {input.Extension} is invalid!");
+                Console.WriteLine($"Invalid conversion from {input.Extension} to {output.Extension}");
             }
             return;
         }
