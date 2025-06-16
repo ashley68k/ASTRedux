@@ -75,11 +75,11 @@ namespace ASTRedux
 
             // inputting AST will always result in a standard audio file output
             // inputting common audio file will always result in an AST output.
-            if (FileExtensions.ASTExt.Contains(input.Extension) && FileExtensions.CommonExt.Contains(output.Extension))
+            if (FileExtensions.ASTExt.Contains(input.Extension) && FileExtensions.OutputExt.Contains(output.Extension))
             {
                 Processing.ProcessAST(input, output);
             }
-            else if (FileExtensions.CommonExt.Contains(input.Extension) && FileExtensions.ASTExt.Contains(output.Extension))
+            else if (FileExtensions.InputExt.Contains(input.Extension) && FileExtensions.ASTExt.Contains(output.Extension))
             {
                 Processing.ProcessAudio(input, output);
             }

@@ -18,7 +18,12 @@ namespace ASTRedux.Utils
             ".rSoundSnd"
         };
 
-        public static HashSet<string> CommonExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public static HashSet<string> InputExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".mp3", ".aac", ".wav"
+        };
+
+        public static HashSet<string> OutputExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             ".wav"
         };
