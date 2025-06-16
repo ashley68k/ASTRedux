@@ -29,7 +29,7 @@ for example, `ASTRedux.exe --input song.mp3 --output bgm030.ast`
 
 ## Acknowledgements
 
-This project uses [CSCore](https://github.com/filoe/cscore) for audio conversion and processing.
+This project uses [NAudio](https://github.com/naudio/NAudio) for audio conversion and processing.
 
 Thank you to the developers of Ghidra and HxD for providing excellent tools for analyzing executables and binary formats.
 
