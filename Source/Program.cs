@@ -1,6 +1,7 @@
 ﻿using ASTRedux.Structs;
 using ASTRedux.Utils;
 using System.CommandLine;
+using System.Diagnostics;
 
 namespace ASTRedux
 {
@@ -13,6 +14,11 @@ namespace ASTRedux
         /// <returns>Invocation of command</returns>
         static async Task<int> Main(string[] args)
         {
+            if(OperatingSystem.IsWindows())
+            { 
+                PlatformHelpers.ValidateWin32CLI();
+            }
+
             var inputOption = new Option<FileInfo>(
                 name: "--input",
                 description: "The file to be processed")
@@ -27,7 +33,7 @@ namespace ASTRedux
                     IsRequired = true
                 };
 
-            var rootCommand = new RootCommand("ASTeroid");
+            var rootCommand = new RootCommand("ASTRedux");
             rootCommand.AddOption(inputOption);
             rootCommand.AddOption(outputOption);
 
@@ -79,7 +85,7 @@ namespace ASTRedux
             }
             else 
             {
-                Console.WriteLine($"Invalid conversion from {input.Extension} to {output.Extension}");
+                Console.WriteLine($"Invalid conversion from '{input.Extension}' to '{output.Extension}'");
             }
             return;
         }
