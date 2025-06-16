@@ -9,8 +9,7 @@ internal static class Processing
     public static void ProcessAST(FileInfo input, FileInfo output)
     {
         using BinaryReader reader = new(input.OpenRead());
-        using BinaryWriter writer = new(output.OpenRead());
-        using MemoryStream ms = new();
+        using FileStream outStream = output.Create();
 
         if (!ASTFile.ValidateMagic(reader))
         {
@@ -23,10 +22,8 @@ internal static class Processing
         reader.BaseStream.Position = ast.AudioInfo.StartOffset;
         byte[] outputBuffer = reader.ReadBytes(ast.AudioInfo.Length);
 
-        using WaveFileWriter memWriter = new(ms, AudioHelpers.WaveFormatFromAudioFormat(ast.AudioInfo.Format));
+        using WaveFileWriter memWriter = new(outStream, AudioHelpers.WaveFormatFromAudioFormat(ast.AudioInfo.Format));
         memWriter.Write(outputBuffer, outputBuffer.Length);
-
-        writer.Write(ms.ToArray());
 
         Bass.Free();
     }

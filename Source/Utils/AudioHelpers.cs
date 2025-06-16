@@ -24,7 +24,7 @@ internal static class AudioHelpers
     {
         return new WaveFormat(
             fmt.SampleRate,
-            fmt.BitDepth,
+            16,
             fmt.Channels
         );
     }
