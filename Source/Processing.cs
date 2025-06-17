@@ -75,7 +75,7 @@ internal static class Processing
                 {
                     // add more as needed/relevant
                     case Errors.FileFormat:
-                        Console.WriteLine("Invalid input extension.");
+                        Console.WriteLine($"Invalid input extension {input.Extension}. Are you missing a BASS plugin for this format?");
                         break;
                     default:
                         Console.WriteLine($"BASS Error! Code #{err}");

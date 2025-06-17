@@ -95,7 +95,7 @@ internal static class Program
         }
         else
         {
-            Console.WriteLine("Invalid output extension.");
+            Console.WriteLine($"Invalid output extension {output.Extension}. Try converting to wav!");
         }
         return;
     }

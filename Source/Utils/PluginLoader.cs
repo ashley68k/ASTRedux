@@ -2,7 +2,7 @@
 
 namespace ASTRedux.Utils;
 
-internal class PluginLoader
+internal static class PluginLoader
 {
     public static void LoadPlugins(string rootDir)
     {

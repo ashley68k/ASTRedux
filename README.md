@@ -9,9 +9,12 @@ Go to the releases section, go to the latest version, and download the suitable 
 Alternatively to install the latest development version, clone the repository or download the repository as a .zip, open the .sln in Visual Studio or Rider, and then build it. 
 You may also run `dotnet build` with your desired settings in the root directory through a terminal.
 
-NAudio branch only supports Windows with wav exports.
-
 ## Usage/Examples
+
+ASTRedux uses ManagedBass for audio conversion, and supports most BASS format plugins that don't require overly specific functionality (such as CD or MIDI playback)
+
+ASTRedux ships with the BASS library, but BASS plugins such as BASSZXTune for chiptunes/tracker modules or BASSFLAC for FLACs can be added by downloading the corresponding archive for your OS/CPU architecture,
+and extracting the .dll (windows), .so (linux), or .dylib (osx) to the root folder of ASTRedux, where the executable and library DLLs reside. Plugins will automatically be loaded and leave a success message in the console.
 
 ASTRedux is used through the CLI as such:
 
@@ -29,7 +32,7 @@ for example, `ASTRedux.exe --input song.mp3 --output bgm030.ast`
 
 ## Acknowledgements
 
-This project uses [CSCore](https://github.com/filoe/cscore) for audio conversion and processing.
+This project uses [ManagedBass](https://github.com/ManagedBass/ManagedBass) for audio conversion and processing.
 
 Thank you to the developers of Ghidra and HxD for providing excellent tools for analyzing executables and binary formats.
 
