@@ -77,13 +77,18 @@ internal static class Program
             return;
         }
 
+        if (!string.IsNullOrEmpty(input.DirectoryName))
+            PluginLoader.LoadPlugins(input.DirectoryName);
+        else
+            Console.WriteLine("No plugins to load!");
+
         // inputting AST will always result in a standard audio file output
         // inputting common audio file will always result in an AST output.
         if (FileExtensions.ASTExt.Contains(input.Extension) && output.Extension == ".wav")
         {
             Processing.ProcessAST(input, output);
         }
-        else if(FileExtensions.ASTExt.Contains(output.Extension))
+        else if (FileExtensions.ASTExt.Contains(output.Extension))
         {
             // let BASS handle input extension, as plugins can change support
             Processing.ProcessAudio(input, output);
