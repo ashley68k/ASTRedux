@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace ASTRedux.Structs;
+namespace ASTRedux.Data;
 
 internal static class StructExtensions
 {

@@ -1,6 +1,6 @@
-﻿using ASTRedux.Structs.Format;
+﻿using ASTRedux.Data.Format;
 
-namespace ASTRedux.Structs.CSound.Sub;
+namespace ASTRedux.Data.CSound.Sub;
 
 internal struct CSBEntry
 {

@@ -1,4 +1,5 @@
-﻿using ASTRedux.Utils;
+﻿using ASTRedux.Enums;
+using ASTRedux.Utils;
 using ManagedBass;
 using System.CommandLine;
 
@@ -13,12 +14,7 @@ internal static class Program
     /// <returns>Invocation of command</returns>
     public static async Task<int> Main(string[] args)
     {
-        if(OperatingSystem.IsWindows())
-        { 
-            PlatformHelpers.ValidateWin32CLI();
-        }
-
-        var inputOption = new Option<FileInfo>(
+        var inputOption = new Option<FileSystemInfo>(
             name: "--input",
             description: "The file to be processed")
             {
@@ -32,17 +28,38 @@ internal static class Program
                 IsRequired = true
             };
 
+        var verbosity = new Option<bool>(
+            name: "--verbose",
+            description: "Output detailed log messages",
+            getDefaultValue: () => false
+            );
+
+        var verbosityLevel = new Option<LogLevel>(
+            name: "--level",
+            description: "Verbosity level",
+            getDefaultValue: () => 0
+            );
+
+
         var rootCommand = new RootCommand("ASTRedux");
         rootCommand.AddOption(inputOption);
         rootCommand.AddOption(outputOption);
+        rootCommand.AddOption(verbosity);
+        rootCommand.AddOption(verbosityLevel);
 
-        rootCommand.SetHandler((FileInfo input, FileInfo output) =>
+        rootCommand.SetHandler((FileSystemInfo input, FileInfo output, bool verbose, LogLevel level) =>
         {
+            Logger.IsVerbose = verbose;
+            Logger.Level = level;
+
+            if (level == LogLevel.EXTREME)
+                Logger.SW.Start();
+
             if ((input != null) && (output != null))
             {
-                FileValidate(input, output);
+                Start(input, output);
             }
-        }, inputOption, outputOption);
+        }, inputOption, outputOption, verbosity, verbosityLevel);
 
         return await rootCommand.InvokeAsync(args);
     }
@@ -53,50 +70,128 @@ internal static class Program
     /// </summary>
     /// <param name="input">A FileInfo object describing a file given on the CLI</param>
     /// <param name="output">A FileInfo object describing a file to be output on the CLI</param>
-    private static void FileValidate(FileInfo input, FileInfo output)
+    private static void Start(FileSystemInfo input, FileInfo output)
     {
+        if (!Validate(input, output))
+            return;
+
+        Logger.Message("All validations passed!", Enums.LogType.INFO);
+
+        CheckForPlugins(input);
+
+        Logger.Message("Plugin check complete!", Enums.LogType.INFO);
+
+        try { 
+            SelectProcessingPipeline(input, output);
+        }
+        catch(Exception ex) {
+            Console.WriteLine($"\n{ex}");
+        }
+        return;
+    }
+
+    private static bool Validate(FileSystemInfo input, FileInfo output)
+    {
+        switch(input)
+        {
+            case FileInfo file:
+                if (file.DirectoryName != null && !BASSHelpers.IsBassPresent(file.DirectoryName))
+                {
+                    Console.WriteLine("BASS library doesn't exist!");
+                    return false;
+                }
+                break;
+            case DirectoryInfo dir:
+                if (dir.FullName != null && !BASSHelpers.IsBassPresent(dir.FullName))
+                {
+                    Console.WriteLine("BASS library doesn't exist!");
+                    return false;
+                }
+                break;
+        }
+
+        Logger.Message("BASS found!", Enums.LogType.INFO);
+
         if (!Bass.Init())
         {
-            Console.WriteLine("Couldn't initialize BASS!");
+            Logger.CriticalMessage("Couldn't initialize BASS!");
+            return false;
         }
+
+        Logger.Message("BASS initialized!", Enums.LogType.INFO);
 
         if (input.FullName == output.FullName)
         {
-            Console.WriteLine("Attempted output to input file!");
-            return;
+            Logger.CriticalMessage("Attempted to overwrite input!");
+            return false;
         }
+
+        Logger.Message("Overwrite check safe!", Enums.LogType.INFO);
 
         if (!input.Exists)
         {
-            Console.WriteLine("Input file doesn't exist!");
-            return;
-        }
-        if(output.Exists)
-        {
-            Console.WriteLine("Output file already exists!");
-            return;
+            Logger.CriticalMessage("Input doesn't exist!");
+            return false;
         }
 
-        if (!string.IsNullOrEmpty(input.DirectoryName))
-            PluginLoader.LoadPlugins(input.DirectoryName);
-        else
-            Console.WriteLine("No plugins to load!");
+        Logger.Message("Input exists!", Enums.LogType.INFO);
 
-        // inputting AST will always result in a standard audio file output
-        // inputting common audio file will always result in an AST output.
-        if (FileExtensions.ASTExt.Contains(input.Extension) && output.Extension == ".wav")
+        if (output.Exists)
         {
-            Processing.ProcessAST(input, output);
+            Logger.CriticalMessage("Output already exists!");
+            return false;
         }
-        else if (FileExtensions.ASTExt.Contains(output.Extension))
+
+        Logger.Message("Output doesn't exist!", Enums.LogType.INFO);
+
+        return true;
+    }
+
+    private static void SelectProcessingPipeline(FileSystemInfo input, FileInfo output)
+    {
+        Logger.Message("Processing branch reached!", Enums.LogType.INFO);
+        switch (input)
         {
-            // let BASS handle input extension, as plugins can change support
-            Processing.ProcessAudio(input, output);
+            case FileInfo file:
+                if (FileExtensions.ASTExt.Contains(file.Extension) && output.Extension == ".wav")
+                {
+                    Processing.ProcessAST(input, output);
+                    Logger.Message($"File {file.Extension} -> {output.Extension} path, run ProcessAST", Enums.LogType.INFO);
+                }
+                else if (FileExtensions.ASTExt.Contains(output.Extension))
+                {
+                    // let BASS handle input extension, as plugins can change support
+                    Processing.ProcessAudio(input, output);
+                    Logger.Message($"File {file.Extension} -> {output.Extension} path, run ProcessAudio", Enums.LogType.INFO);
+                }
+                else
+                {
+                    Logger.CriticalMessage($"File {file.Extension} -> {output.Extension} path has nowhere to go!");
+                    throw new InvalidDataException("Invalid extension! Are you missing a BASS plugin, omitting extension, or exporting to non-wav file?");
+                }
+                break;
+            case DirectoryInfo dir:
+                Logger.CriticalMessage("Input interpreted as directory!");
+                throw new NotImplementedException("rSound conversion/multi-processing not yet implemented!");
         }
-        else
+    }
+
+    private static void CheckForPlugins(FileSystemInfo input)
+    {
+        switch(input)
         {
-            Console.WriteLine($"Invalid output extension {output.Extension}. Try converting to wav!");
+            case FileInfo inFile:
+                if (!string.IsNullOrEmpty(inFile.DirectoryName))
+                    PluginLoader.LoadPlugins(inFile.DirectoryName);
+                else
+                    Console.WriteLine("No plugins to load!");
+                break;
+            case DirectoryInfo inDir:
+                if (!string.IsNullOrEmpty(inDir.FullName))
+                    PluginLoader.LoadPlugins(inDir.FullName);
+                else
+                    Console.WriteLine("No plugins to load!");
+                break;
         }
-        return;
     }
 }

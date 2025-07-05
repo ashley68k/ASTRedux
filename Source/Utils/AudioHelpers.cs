@@ -1,4 +1,4 @@
-﻿using ASTRedux.Structs.Format;
+﻿using ASTRedux.Data.Format;
 using ManagedBass;
 
 namespace ASTRedux.Utils;

@@ -1,10 +1,10 @@
 ﻿using ASTRedux.Enums;
-using ASTRedux.Structs.AST;
-using ASTRedux.Structs.Format;
+using ASTRedux.Data.AST;
+using ASTRedux.Data.Format;
 using ASTRedux.Utils;
 using ManagedBass;
 
-namespace ASTRedux;
+namespace ASTRedux.FileModels;
 
 internal class ASTFile
 {
@@ -20,8 +20,6 @@ internal class ASTFile
     /// Position 0x00 - 0x03
     /// </summary>
     public const int BIG_ENDIAN_MAGIC = 0x42545341;
-
-    public const int MAX_HEADER_SIZE = 0x800;
 
     public ASTData AudioInfo { get; set; }
 

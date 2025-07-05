@@ -1,7 +1,7 @@
 ﻿using ASTRedux.Enums;
-using ASTRedux.Structs.Format;
+using ASTRedux.Data.Format;
 
-namespace ASTRedux.Structs.AST;
+namespace ASTRedux.Data.AST;
 
 /*
  * Header Format:

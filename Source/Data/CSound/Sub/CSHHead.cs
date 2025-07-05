@@ -1,4 +1,4 @@
-﻿namespace ASTRedux.Structs.CSound.Sub;
+﻿namespace ASTRedux.Data.CSound.Sub;
 
 internal struct CSHHead
 {

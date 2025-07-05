@@ -1,7 +1,8 @@
 ﻿using ASTRedux.Utils;
 
-namespace ASTRedux.Structs.CSound;
+namespace ASTRedux.Data.CSound;
 
+// 0x20 length
 internal struct CSoundHeader
 {
     public const int FILE_MAGIC = 0x4C444E53; // sndl (sound, little endian)
@@ -17,16 +18,6 @@ internal struct CSoundHeader
     public int CSBOffset { get; private set; }
 
     public uint FFPad_2 = Constants.FFFF_PAD;
-
-    // unimplemented for now
-   /* CSRHead csr = new();
-    List<CSREntry> csrEntries = new List<CSREntry>();
-
-    CSHHead csh = new();
-    List<CSHEntry> cshEntries = new List<CSHEntry>();
-
-    CSBHead csb = new();
-    List<CSBEntry> csbEntries = new List<CSBEntry>(); */
 
     public CSoundHeader()
     {
