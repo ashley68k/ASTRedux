@@ -1,5 +1,4 @@
-﻿using ASTRedux.Enums;
-using ASTRedux.Data.Format;
+﻿using ASTRedux.Data.Format;
 
 namespace ASTRedux.Data.AST;
 
@@ -13,18 +12,18 @@ namespace ASTRedux.Data.AST;
  * 0x14-0x1F = 12 0x00 bytes?
  * 0x20-0x23 = length of music (int)
  * 0x24-0x2F = 12 0xFF bytes?
- * 0x30-0x31 = PCM flag such as in .wav header? (short)
- * 0x32-0x33 = channel count (short)
- * 0x34-0x37 = sample rate (int)
- * 0x38-0x3B = bytes per second (sampleRate * bitDepth * channels) / 8 (int)
- * 0x3C-0x3D = unknown (always 4) (short)
- * 0x3E-0x3F = bit-depth (short)
+ * 0x30-0x31 = wFormatTag (waveformatex format tag) (short)
+ * 0x32-0x33 = nChannels (channels) (short)
+ * 0x34-0x37 = nSamplesPerSec (sample rate) (int)
+ * 0x38-0x3B = nAvgBytesPerSec (bytes per second (sampleRate * bitDepth * channels) / 8) (int)
+ * 0x3C-0x3D = nBlockAlign (size of each sample data) (short)
+ * 0x3E-0x3F = wBitsPerSample (bit depth) (short)
+ * 0x40-0x41 = cbSize
  */
 internal struct ASTData
 {
-    public Endian Endianness { get; set; }
     public int StartOffset { get; set; } 
     public int Length { get; set; }
     
-    public AudioFormat Format { get; set; }
+    public WaveFormatEX Format { get; set; }
 }

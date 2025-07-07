@@ -1,4 +1,4 @@
-﻿namespace ASTRedux.Utils;
+﻿namespace ASTRedux.Utils.Consts;
 
 internal static class FileExtensions
 {

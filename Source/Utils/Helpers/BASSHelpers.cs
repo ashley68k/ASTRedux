@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASTRedux.Utils;
+namespace ASTRedux.Utils.Helpers;
 
 internal static class BASSHelpers
 {

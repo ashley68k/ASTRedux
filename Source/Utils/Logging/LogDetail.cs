@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASTRedux.Enums
+namespace ASTRedux.Utils.Logging
 {
-    internal enum LogLevel : ushort
+    internal enum LogDetail : ushort
     {
         NONE = 0,
         LOW = 1, 

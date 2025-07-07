@@ -1,5 +1,7 @@
-﻿using ASTRedux.Enums;
-using ASTRedux.Utils;
+﻿using ASTRedux.Utils;
+using ASTRedux.Utils.Consts;
+using ASTRedux.Utils.Helpers;
+using ASTRedux.Utils.Logging;
 using ManagedBass;
 using System.CommandLine;
 
@@ -21,6 +23,8 @@ internal static class Program
                 IsRequired = true
             };
 
+        inputOption.AddAlias("-i");
+
         var outputOption = new Option<FileInfo>(
             name: "--output",
             description: "Filename to be output")
@@ -28,38 +32,44 @@ internal static class Program
                 IsRequired = true
             };
 
-        var verbosity = new Option<bool>(
-            name: "--verbose",
-            description: "Output detailed log messages",
+        outputOption.AddAlias("-o");
+
+        var overwrite = new Option<bool>(
+            name: "--overwrite",
+            description: "Overwrite output file",
             getDefaultValue: () => false
             );
 
-        var verbosityLevel = new Option<LogLevel>(
-            name: "--level",
-            description: "Verbosity level",
-            getDefaultValue: () => 0
+        overwrite.AddAlias("-w");
+
+        var verbosityLevel = new Option<LogDetail>(
+            name: "--verbose",
+            description: "Verbosity/logging level",
+            getDefaultValue: () => LogDetail.NONE
             );
 
+        verbosityLevel.AddAlias("-v");
 
-        var rootCommand = new RootCommand("ASTRedux");
+        var rootCommand = new RootCommand("ASTRedux - a CLI tool to convert Dead Rising audio");
         rootCommand.AddOption(inputOption);
         rootCommand.AddOption(outputOption);
-        rootCommand.AddOption(verbosity);
         rootCommand.AddOption(verbosityLevel);
+        rootCommand.AddOption(overwrite);
 
-        rootCommand.SetHandler((FileSystemInfo input, FileInfo output, bool verbose, LogLevel level) =>
+        rootCommand.SetHandler((FileSystemInfo input, FileInfo output, LogDetail level, bool overwrite) =>
         {
-            Logger.IsVerbose = verbose;
-            Logger.Level = level;
+            Logger.VerbosityLevel = level;
 
-            if (level == LogLevel.EXTREME)
+            Config.OverwriteOutput = overwrite;
+
+            if (level == LogDetail.EXTREME)
                 Logger.SW.Start();
 
             if ((input != null) && (output != null))
             {
                 Start(input, output);
             }
-        }, inputOption, outputOption, verbosity, verbosityLevel);
+        }, inputOption, outputOption, verbosityLevel, overwrite);
 
         return await rootCommand.InvokeAsync(args);
     }
@@ -75,18 +85,19 @@ internal static class Program
         if (!Validate(input, output))
             return;
 
-        Logger.Message("All validations passed!", Enums.LogType.INFO);
+        Logger.Message("All validations passed!", LogType.INFO);
 
         CheckForPlugins(input);
 
-        Logger.Message("Plugin check complete!", Enums.LogType.INFO);
+        Logger.Message("Plugin check complete!", LogType.INFO);
 
-        try { 
-            SelectProcessingPipeline(input, output);
-        }
-        catch(Exception ex) {
-            Console.WriteLine($"\n{ex}");
-        }
+        SelectProcessingPipeline(input, output);
+
+        if (Logger.VerbosityLevel != LogDetail.NONE)
+            File.WriteAllText($"{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.log", Logger.logOut.ToString());
+
+        Logger.Message("Log file written!", LogType.INFO);
+
         return;
     }
 
@@ -97,20 +108,28 @@ internal static class Program
             case FileInfo file:
                 if (file.DirectoryName != null && !BASSHelpers.IsBassPresent(file.DirectoryName))
                 {
-                    Console.WriteLine("BASS library doesn't exist!");
+                    Logger.CriticalMessage("BASS library doesn't exist!");
                     return false;
                 }
                 break;
             case DirectoryInfo dir:
-                if (dir.FullName != null && !BASSHelpers.IsBassPresent(dir.FullName))
+
+                if(!dir.Exists)
                 {
-                    Console.WriteLine("BASS library doesn't exist!");
+                    Logger.CriticalMessage("Input directory doesn't exist!");
                     return false;
                 }
+
+                if (dir.FullName != null && !BASSHelpers.IsBassPresent(dir.FullName))
+                {
+                    Logger.CriticalMessage("BASS library doesn't exist!");
+                    return false;
+                }
+
                 break;
         }
 
-        Logger.Message("BASS found!", Enums.LogType.INFO);
+        Logger.Message("BASS found!", LogType.INFO);
 
         if (!Bass.Init())
         {
@@ -118,7 +137,7 @@ internal static class Program
             return false;
         }
 
-        Logger.Message("BASS initialized!", Enums.LogType.INFO);
+        Logger.Message("BASS initialized!", LogType.INFO);
 
         if (input.FullName == output.FullName)
         {
@@ -126,7 +145,7 @@ internal static class Program
             return false;
         }
 
-        Logger.Message("Overwrite check safe!", Enums.LogType.INFO);
+        Logger.Message("Overwrite check safe!", LogType.INFO);
 
         if (!input.Exists)
         {
@@ -134,35 +153,35 @@ internal static class Program
             return false;
         }
 
-        Logger.Message("Input exists!", Enums.LogType.INFO);
+        Logger.Message("Input exists!", LogType.INFO);
 
-        if (output.Exists)
+        if (output.Exists && !Config.OverwriteOutput)
         {
             Logger.CriticalMessage("Output already exists!");
             return false;
         }
 
-        Logger.Message("Output doesn't exist!", Enums.LogType.INFO);
+        Logger.Message(Config.OverwriteOutput ? "Overwriting output file!" : "Output file doesn't exist!", LogType.INFO);
 
         return true;
     }
 
     private static void SelectProcessingPipeline(FileSystemInfo input, FileInfo output)
     {
-        Logger.Message("Processing branch reached!", Enums.LogType.INFO);
+        Logger.Message("Processing branch reached!", LogType.INFO);
         switch (input)
         {
             case FileInfo file:
                 if (FileExtensions.ASTExt.Contains(file.Extension) && output.Extension == ".wav")
                 {
+                    Logger.Message($"File {file.Extension} -> {output.Extension} path, run ProcessAST()", LogType.INFO);
                     Processing.ProcessAST(input, output);
-                    Logger.Message($"File {file.Extension} -> {output.Extension} path, run ProcessAST", Enums.LogType.INFO);
                 }
                 else if (FileExtensions.ASTExt.Contains(output.Extension))
                 {
                     // let BASS handle input extension, as plugins can change support
+                    Logger.Message($"File {file.Extension} -> {output.Extension} path, run ProcessAudio()", LogType.INFO);
                     Processing.ProcessAudio(input, output);
-                    Logger.Message($"File {file.Extension} -> {output.Extension} path, run ProcessAudio", Enums.LogType.INFO);
                 }
                 else
                 {
@@ -183,15 +202,11 @@ internal static class Program
             case FileInfo inFile:
                 if (!string.IsNullOrEmpty(inFile.DirectoryName))
                     PluginLoader.LoadPlugins(inFile.DirectoryName);
-                else
-                    Console.WriteLine("No plugins to load!");
-                break;
+                    break;
             case DirectoryInfo inDir:
                 if (!string.IsNullOrEmpty(inDir.FullName))
                     PluginLoader.LoadPlugins(inDir.FullName);
-                else
-                    Console.WriteLine("No plugins to load!");
-                break;
+                    break;
         }
     }
 }

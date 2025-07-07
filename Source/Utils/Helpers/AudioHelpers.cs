@@ -1,7 +1,7 @@
 ﻿using ASTRedux.Data.Format;
 using ManagedBass;
 
-namespace ASTRedux.Utils;
+namespace ASTRedux.Utils.Helpers;
 
 internal static class AudioHelpers
 {
@@ -20,7 +20,7 @@ internal static class AudioHelpers
         return TimeSpan.FromSeconds((double)length / sampleSize / sampleRate);
     }
 
-    public static WaveFormat WaveFormatFromAudioFormat(AudioFormat fmt)
+    public static WaveFormat WaveFormatFromAudioFormat(WaveFormatEX fmt)
     {
         return new WaveFormat(
             fmt.SampleRate,

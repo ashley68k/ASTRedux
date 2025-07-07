@@ -1,4 +1,5 @@
-﻿using ManagedBass;
+﻿using ASTRedux.Utils.Logging;
+using ManagedBass;
 
 namespace ASTRedux.Utils;
 
@@ -14,24 +15,26 @@ internal static class PluginLoader
                 !string.Equals(Path.GetFileNameWithoutExtension(file), $"{OSUtils.GetBassLibraryName()}", StringComparison.OrdinalIgnoreCase)
             );
 
+        if (!files.Any() )
+            Logger.Message($"No plugins found!", LogType.WARNING);
+
         foreach (var file in files)
         {
             using BinaryReader validator = new(File.OpenRead(file));
 
             // skip if magic doesn't match platform
-            if (PositionReader.ReadUInt32At(validator, 0x00) != OSUtils.GetPEMagic())
-            {
-                Logger.Message($"Library PE magic {OSUtils.GetPEMagic()} match!", Enums.LogType.INFO);
+            if (PositionReader.ReadUInt32At(validator, 0x00, file) != OSUtils.GetPEMagic())
                 continue;
-            }
 
-            if(Bass.PluginLoad(file) == 0)
+            Logger.Message($"Library PE magic 0x{OSUtils.GetPEMagic():X8} in candidate {Path.GetFileName(file)} matches!", LogType.INFO);
+
+            if (Bass.PluginLoad(file) == 0)
             {
-                Logger.Message($"BASS Error '{Bass.LastError}' during plugin loading!\nPlugin Path: {file}", Enums.LogType.ERROR);
+                Logger.CriticalMessage($"BASS Error '{Bass.LastError}' during plugin loading!\nPlugin Path: {file}");
                 break;
             }
 
-            Logger.Message($"BASS plugin {Path.GetFileName(file)} loaded!", Enums.LogType.INFO);
+            Logger.Message($"BASS plugin {Path.GetFileName(file)} loaded!", LogType.INFO);
         }
     }
 }

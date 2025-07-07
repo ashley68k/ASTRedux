@@ -1,14 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using ASTRedux.Enums;
+using System.Text;
 
-namespace ASTRedux.Utils
+namespace ASTRedux.Utils.Logging
 {
     internal static class Logger
     {
-        public static bool IsVerbose { get; set; }
-
-        public static LogLevel Level { get; set; }
+        public static LogDetail VerbosityLevel { get; set; }
 
         /// <summary>
         /// Performance analysis for Logger
@@ -16,6 +14,10 @@ namespace ASTRedux.Utils
         public static Stopwatch SW = new();
 
         private static TimeSpan TotalTime = new();
+
+        private static string formatMessage = string.Empty;
+
+        public static StringBuilder logOut { get; private set; } = new();
 
         /// <summary>
         /// Sets colour based on the type of log
@@ -41,12 +43,12 @@ namespace ASTRedux.Utils
         /// Logs a message in accordance with specified verbosity and logging level. Should not be used with LogType.ERROR, which will redirect to CriticalMessage().
         /// </summary>
         /// <param name="message">A string description of an event to log</param>
-        /// <param name="type">A LogType enum describing the severity of the message</param>
+        /// <param name="type">A LogType enum describing the nature of the message</param>
         /// <param name="memberName">A string representing the method in which the Message occurred.</param>
         /// <param name="srcPath">A string representing the source file in which the Message occurred.</param>
         /// <param name="srcLine">A string representing the line of code in which the Message occurred.</param>
         public static void Message(string message, 
-            LogType type, 
+            LogType type = LogType.INFO,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string srcPath = "",
             [CallerLineNumber] int srcLine = 0)
@@ -59,46 +61,41 @@ namespace ASTRedux.Utils
                 return;
             }
 
-            switch(Level)
+            switch(VerbosityLevel)
             {
-                case LogLevel.NONE: 
+                case LogDetail.NONE: 
                     break;
-                case LogLevel.LOW:
-                    SetColour(type);
-                    Console.WriteLine($"[{type}]: {message}");
-                    Console.ForegroundColor = ConsoleColor.White;
-
+                case LogDetail.LOW:
+                    formatMessage = $"[{type}]: {message}";
                     break;
-                case LogLevel.MEDIUM:
-                    SetColour(type);
-                    Console.WriteLine($"[{type}] @ Line {srcLine} in {memberName}: {message}");
-                    Console.ForegroundColor = ConsoleColor.White;
-
+                case LogDetail.MEDIUM:
+                    formatMessage = $"[{type}] @ Line {srcLine} in {memberName}: {message}";
                     break;
-                case LogLevel.HIGH:
-                    SetColour(type);
-                    Console.WriteLine($"[{type}] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}");
-                    Console.ForegroundColor = ConsoleColor.White;
-
+                case LogDetail.HIGH:
+                    formatMessage = $"[{type}] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
                     break;
-                case LogLevel.EXTREME:
+                case LogDetail.EXTREME:
+                    formatMessage = $"\n{SW.Elapsed.TotalMilliseconds}ms elapsed/{TotalTime.TotalMilliseconds}ms total at {DateTime.Now.ToString("hh:mm:sstt")}\n[{type}] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
                     TotalTime += SW.Elapsed;
-
-                    SetColour(type);
-                    Console.WriteLine($"\n{SW.Elapsed.TotalMilliseconds}ms elapsed/{TotalTime.TotalMilliseconds}ms total\n[{type}] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}():\n{message}");
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    SW.Restart();
-
                     break;
             }
+
+            SetColour(type);
+
+            logOut.Append(formatMessage);
+            Console.WriteLine(formatMessage);
+
+            if(VerbosityLevel == LogDetail.EXTREME)
+                SW.Restart();
+
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>
         /// Logs an error irregardless of logging level.
         /// </summary>
         /// <param name="message">A string description of an event to log</param>
-        /// <param name="type">A LogType enum describing the severity of the message</param>
+        /// <param name="type">A LogType enum describing the nature of the message</param>
         /// <param name="memberName">A string representing the method in which the CriticalMessage occurred.</param>
         /// <param name="srcPath">A string representing the source file in which the CriticalMessage occurred.</param>
         /// <param name="srcLine">A string representing the line of code in which the CriticalMessage occurred.</param>
@@ -107,8 +104,13 @@ namespace ASTRedux.Utils
             [CallerFilePath] string srcPath = "",
             [CallerLineNumber] int srcLine = 0)
         {
+            string formatMessage = $"\n[ERROR] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
+
             SetColour(LogType.ERROR);
-            Console.WriteLine($"[ERROR] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}");
+
+            logOut.Append(formatMessage);
+            Console.WriteLine(formatMessage);
+
             Console.ForegroundColor = ConsoleColor.White;
         }
     }

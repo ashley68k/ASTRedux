@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
+using ASTRedux.Utils.Logging;
 
-namespace ASTRedux.Data;
+namespace ASTRedux.Utils;
 
 internal static class StructExtensions
 {
@@ -25,6 +26,8 @@ internal static class StructExtensions
         {
             Marshal.FreeHGlobal(ptr);
         }
+
+        Logger.Message($"Struct marshaled to byte array successfully!", LogType.INFO);
 
         return buffer;
     }

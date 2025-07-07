@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASTRedux.Enums
+namespace ASTRedux.Utils.Logging
 {
     internal enum LogType
     {

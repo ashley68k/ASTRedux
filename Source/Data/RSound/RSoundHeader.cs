@@ -1,9 +1,9 @@
-﻿using ASTRedux.Utils;
+﻿using ASTRedux.Utils.Consts;
 
-namespace ASTRedux.Data.CSound;
+namespace ASTRedux.Data.RSound;
 
 // 0x20 length
-internal struct CSoundHeader
+internal struct RSoundHeader
 {
     public const int FILE_MAGIC = 0x4C444E53; // sndl (sound, little endian)
     public int FileLength { get; private set; } // file length + 1
@@ -19,7 +19,7 @@ internal struct CSoundHeader
 
     public uint FFPad_2 = Constants.FFFF_PAD;
 
-    public CSoundHeader()
+    public RSoundHeader()
     {
     }
 }

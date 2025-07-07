@@ -1,4 +1,4 @@
-﻿using ASTRedux.Enums;
+﻿using System.Runtime.CompilerServices;
 using ASTRedux.Data.AST;
 using ASTRedux.Data.Format;
 using ASTRedux.Utils;
@@ -30,9 +30,9 @@ internal class ASTFile
     /// </summary>
     /// <param name="reader">A BinaryReader containing the data of an AST file</param>
     /// <returns>True on LE/BE AST match, false otherwise</returns>
-    public static bool ValidateMagic(BinaryReader reader)
+    public static bool ValidateMagic(BinaryReader reader, string filePath = "")
     {
-        int streamMagic = PositionReader.ReadInt32At(reader, 0x00);
+        int streamMagic = PositionReader.ReadInt32At(reader, 0x00, filePath);
         return streamMagic == LITTLE_ENDIAN_MAGIC || streamMagic == BIG_ENDIAN_MAGIC;
     }
 
@@ -47,16 +47,15 @@ internal class ASTFile
         {
             StartOffset = 0x800,
             Length = byteLength,
-            Format = new AudioFormat(
+            Format = new WaveFormatEX(
                 (short)fmt.Encoding,
                 (short)fmt.Channels,
                 fmt.SampleRate,
                 fmt.AverageBytesPerSecond,
                 (short)fmt.BlockAlign,
-                (short)fmt.BitsPerSample
+                (short)fmt.BitsPerSample,
+                0
             ),
-            // always LE until BE support is added
-            Endianness = Endian.LITTLE_ENDIAN
         };
         Header = new ASTHeader(AudioInfo);
     }
@@ -65,22 +64,21 @@ internal class ASTFile
     /// Creates an instance of ASTFile given an AST binaryreader input
     /// </summary>
     /// <param name="reader">A BinaryReader containing the AST binary data as a stream</param>
-    public ASTFile(BinaryReader reader)
+    public ASTFile(BinaryReader reader, string filePath = "")
     {
         AudioInfo = new ASTData
         {
-            StartOffset = PositionReader.ReadInt32At(reader, 0x10),
-            Length = PositionReader.ReadInt32At(reader, 0x20),
-            Format = new AudioFormat(
-                PositionReader.ReadInt16At(reader, 0x30), // format flag
-                PositionReader.ReadInt16At(reader, 0x32), // channels
-                PositionReader.ReadInt32At(reader, 0x34), // sample rate
-                PositionReader.ReadInt32At(reader, 0x38), // bytes per second
-                PositionReader.ReadInt16At(reader, 0x3C), // block size
-                PositionReader.ReadInt16At(reader, 0x3E) // bit depth
+            StartOffset = PositionReader.ReadInt32At(reader, 0x10, filePath),
+            Length = PositionReader.ReadInt32At(reader, 0x20, filePath),
+            Format = new WaveFormatEX(
+                PositionReader.ReadInt16At(reader, 0x30, filePath), // format flag
+                PositionReader.ReadInt16At(reader, 0x32, filePath), // channels
+                PositionReader.ReadInt32At(reader, 0x34, filePath), // sample rate
+                PositionReader.ReadInt32At(reader, 0x38, filePath), // bytes per second
+                PositionReader.ReadInt16At(reader, 0x3C, filePath), // block size
+                PositionReader.ReadInt16At(reader, 0x3E, filePath), // bit depth
+                0
             ),
-            // always LE until BE support is added
-            Endianness = Endian.LITTLE_ENDIAN
         };
         Header = new ASTHeader(AudioInfo);
     }
