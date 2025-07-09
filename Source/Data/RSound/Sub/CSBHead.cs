@@ -1,8 +1,28 @@
-﻿namespace ASTRedux.Data.RSound.Sub;
+﻿using System.Reflection.Metadata;
+using ASTRedux.Utils.Consts;
 
-internal struct CSBHead
+namespace ASTRedux.Data.RSound.Sub;
+
+internal struct CSBHead()
 {
     public const int CSB_MAGIC = 0x20425343; // csb (CSoundBank?)
-    public int CSBLength { get; set; } // (file length - csb offset) + 1
-    public int NumSounds { get; set; } // number of sounds in file
+
+    // file end - csb head start
+    public int DataSize;
+
+    public int WaveCount;
+
+    // csb head + csb entry start = 1st byte of 1st entry
+    public int CSBEntryStart;
+
+    // audio offset - csb head start
+    public int AudioStart;
+
+    // file end - audio start
+    public int TotalAudioSize;
+
+    // always 1?
+    public int Unknown = 1;
+
+    public uint FFPAD = Constants.FFFF_PAD;
 }

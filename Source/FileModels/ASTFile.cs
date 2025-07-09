@@ -41,13 +41,13 @@ internal class ASTFile
     /// </summary>
     /// <param name="fmt">A ManagedBass WaveFormat object describing the format for the AST file to take on</param>
     /// <param name="byteLength">Length in bytes of the decoded audio buffer</param>
-    public ASTFile(WaveFormat fmt, int byteLength)
+    public ASTFile(ManagedBass.WaveFormat fmt, int byteLength)
     {
         AudioInfo = new ASTData
         {
             StartOffset = 0x800,
             Length = byteLength,
-            Format = new WaveFormatEX(
+            Format = new Data.Format.WaveFormat(
                 (short)fmt.Encoding,
                 (short)fmt.Channels,
                 fmt.SampleRate,
@@ -70,7 +70,7 @@ internal class ASTFile
         {
             StartOffset = PositionReader.ReadInt32At(reader, 0x10, filePath),
             Length = PositionReader.ReadInt32At(reader, 0x20, filePath),
-            Format = new WaveFormatEX(
+            Format = new Data.Format.WaveFormat(
                 PositionReader.ReadInt16At(reader, 0x30, filePath), // format flag
                 PositionReader.ReadInt16At(reader, 0x32, filePath), // channels
                 PositionReader.ReadInt32At(reader, 0x34, filePath), // sample rate

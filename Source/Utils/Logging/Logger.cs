@@ -61,7 +61,10 @@ namespace ASTRedux.Utils.Logging
                 return;
             }
 
-            switch(VerbosityLevel)
+            if (VerbosityLevel == LogDetail.NONE)
+                return;
+
+            switch (VerbosityLevel)
             {
                 case LogDetail.NONE: 
                     break;

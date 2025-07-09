@@ -8,16 +8,11 @@ namespace ASTRedux;
 
 internal static class Processing
 {
-    public static void ProcessAST(FileSystemInfo input, FileInfo output)
+    public static void ProcessAST(FileInfo input, FileInfo output)
     {
-        if (input is not FileInfo file) {
-            Logger.CriticalMessage("Input isn't a file!");
-            return;
-        }
-
         Logger.Message("Input is valid!", LogType.INFO);
 
-        using BinaryReader reader = new(file.OpenRead());
+        using BinaryReader reader = new(input.OpenRead());
         using FileStream outStream = output.Create();
 
         if (!ASTFile.ValidateMagic(reader)) {
@@ -27,7 +22,7 @@ internal static class Processing
 
         Logger.Message("AST magic matches!", LogType.INFO);
 
-        ASTFile ast = new(reader, file.FullName);
+        ASTFile ast = new(reader, input.FullName);
 
         Logger.Message("AST header built!", LogType.INFO);
 
@@ -46,22 +41,16 @@ internal static class Processing
         Logger.Message("BASS freed!", LogType.INFO);
     }
 
-    public static void ProcessAudio(FileSystemInfo input, FileInfo output)
+    public static void ProcessMusic(FileInfo input, FileInfo output)
     {
-        if(input is not FileInfo file) { 
-            Logger.CriticalMessage("Input isn't a file!");
-            return;
-        }
-
         if (Config.OverwriteOutput)
             output.Delete();
-
 
         Logger.Message("Input is valid!", LogType.INFO);
 
         using BinaryWriter writer = new(File.OpenWrite(output.FullName));
 
-        int streamHnd = Bass.CreateStream(file.FullName, 0, 0, BassFlags.Decode | BassFlags.Prescan);
+        int streamHnd = Bass.CreateStream(input.FullName, 0, 0, BassFlags.Decode | BassFlags.Prescan);
 
         Logger.Message("BASS stream created!", LogType.INFO);
 
@@ -115,5 +104,15 @@ internal static class Processing
         Bass.Free();
 
         Logger.Message("BASS freed!", LogType.INFO);
+    }
+
+    public static void ProcessSoundIn(FileInfo input, DirectoryInfo output)
+    {
+        // stub for now
+    }
+
+    public static void ProcessSoundOut(DirectoryInfo input, FileInfo output)
+    {
+        // stub for now
     }
 }

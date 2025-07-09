@@ -7,13 +7,13 @@ namespace ASTRedux.Data.AST;
 /*
  * Header Format:
  * 0x00-0x03 = int magic (appears as a string in hex editor, but Dead Rising executable interprets the first 4 bytes of AST as an int and does an int compare to validate) 
- * 0x04-0x07 = always 0x00000000? 
+ * 0x04-0x07 = probably 00 pad
  * 0x08-0x0B = unknown (always 01 02 00 00) (int)
- * 0x0C-0x0F = number of sounds in file (1 for music, multiple for cutscenes)
+ * 0x0C-0x0F = unknown (always1)
  * 0x10-0x13 = music offset in file (int)
- * 0x14-0x1F = 12 0x00 bytes?
+ * 0x14-0x1F = 00 pad to 16-wide line
  * 0x20-0x23 = length of music (int)
- * 0x24-0x2F = 12 0xFF bytes?
+ * 0x24-0x2F = FF pad to 16-wide line
  * 0x30-0x31 = wFormatTag (1 for music [pcm], 0xFFFE for cutscene audio [extended])
  * 0x32-0x33 = channel count (short)
  * 0x34-0x37 = sample rate (int)
@@ -39,7 +39,7 @@ internal struct ASTHeader(ASTData data)
     public readonly uint FFFFPad_1 = 0xFFFFFFFF;
     public readonly uint FFFFPad_2 = 0xFFFFFFFF;
     public readonly uint FFFFPad_3 = 0xFFFFFFFF;
-    public WaveFormatEX Format { get; set; } = data.Format;
+    public WaveFormat Format { get; set; } = data.Format;
 
     public readonly int CBlockField1 = 0xC0000;
     public readonly int CBlockField2 = 0x42F001;

@@ -25,5 +25,5 @@ internal struct ASTData
     public int StartOffset { get; set; } 
     public int Length { get; set; }
     
-    public WaveFormatEX Format { get; set; }
+    public WaveFormat Format { get; set; }
 }

@@ -4,6 +4,7 @@ using ASTRedux.Utils.Helpers;
 using ASTRedux.Utils.Logging;
 using ManagedBass;
 using System.CommandLine;
+using System.Reflection.Metadata.Ecma335;
 
 namespace ASTRedux;
 
@@ -166,32 +167,39 @@ internal static class Program
         return true;
     }
 
-    private static void SelectProcessingPipeline(FileSystemInfo input, FileInfo output)
+    private static void SelectProcessingPipeline(FileSystemInfo input, FileSystemInfo output)
     {
         Logger.Message("Processing branch reached!", LogType.INFO);
-        switch (input)
+
+        SoundType type = GetProcessType(input, output);
+
+        if(type == SoundType.INVALID)
         {
-            case FileInfo file:
-                if (FileExtensions.ASTExt.Contains(file.Extension) && output.Extension == ".wav")
-                {
-                    Logger.Message($"File {file.Extension} -> {output.Extension} path, run ProcessAST()", LogType.INFO);
-                    Processing.ProcessAST(input, output);
-                }
-                else if (FileExtensions.ASTExt.Contains(output.Extension))
-                {
-                    // let BASS handle input extension, as plugins can change support
-                    Logger.Message($"File {file.Extension} -> {output.Extension} path, run ProcessAudio()", LogType.INFO);
-                    Processing.ProcessAudio(input, output);
-                }
-                else
-                {
-                    Logger.CriticalMessage($"File {file.Extension} -> {output.Extension} path has nowhere to go!");
-                    throw new InvalidDataException("Invalid extension! Are you missing a BASS plugin, omitting extension, or exporting to non-wav file?");
-                }
+            Logger.CriticalMessage("Process type can't be determined!");
+            return;
+        }
+
+        switch (type)
+        {
+            // i cast input/output to their respective types here. this could theoretically be risky,
+            // however, i already validated it in GetProcessType(). this just avoids redundant checking later, and is
+            // further guarded by the above invalid check.
+            case SoundType.AST_IN:
+                Logger.Message($"File {input.Extension} -> {output.Extension} path, run ProcessAST()", LogType.INFO);
+                Processing.ProcessAST(input as FileInfo, output as FileInfo);
                 break;
-            case DirectoryInfo dir:
-                Logger.CriticalMessage("Input interpreted as directory!");
-                throw new NotImplementedException("rSound conversion/multi-processing not yet implemented!");
+            case SoundType.AST_OUT:
+                Logger.Message($"File {input.Extension} -> {output.Extension} path, run ProcessMusic()", LogType.INFO);
+                Processing.ProcessMusic(input as FileInfo, output as FileInfo);
+                break;
+            case SoundType.SOUND_IN:
+                Logger.Message($"File {input.Extension} -> {output.FullName} path, run ProcessSoundIn()", LogType.INFO);
+                Processing.ProcessSoundIn(input as FileInfo, output as DirectoryInfo);
+                break;
+            case SoundType.SOUND_OUT:
+                Logger.Message($"File {input.Extension} -> {output.FullName} path, run ProcessSoundOut()", LogType.INFO);
+                Processing.ProcessSoundOut(input as DirectoryInfo, output as FileInfo);
+                break;
         }
     }
 
@@ -208,5 +216,30 @@ internal static class Program
                     PluginLoader.LoadPlugins(inDir.FullName);
                     break;
         }
+    }
+
+    private static SoundType GetProcessType(FileSystemInfo input, FileSystemInfo output)
+    {
+        return (input, output) switch
+        {
+            (FileInfo inFile, FileInfo outFile) =>
+                FileExtensions.ASTExt.Contains(inFile.Extension) && outFile.Extension == ".wav"
+                    ? SoundType.AST_IN
+                    : FileExtensions.ASTExt.Contains(outFile.Extension)
+                        ? SoundType.AST_OUT
+                        : SoundType.INVALID,
+
+            (FileInfo inFile, DirectoryInfo outDir) =>
+                !outDir.Exists && FileExtensions.SoundExt.Contains(inFile.Extension)
+                    ? SoundType.SOUND_IN
+                    : SoundType.INVALID,
+
+            (DirectoryInfo inDir, DirectoryInfo outFile) =>
+                inDir.Exists && FileExtensions.SoundExt.Contains(outFile.Extension)
+                    ? SoundType.SOUND_OUT
+                    : SoundType.INVALID,
+
+            _ => SoundType.INVALID
+        };
     }
 }

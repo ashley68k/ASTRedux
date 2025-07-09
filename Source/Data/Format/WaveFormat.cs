@@ -3,7 +3,7 @@
 namespace ASTRedux.Data.Format;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-internal struct WaveFormatEX(short formatFlag, short channels, int sampleRate, int bps, short sampleSize, short bitDepth, short cbSize)
+internal struct WaveFormat(short formatFlag, short channels, int sampleRate, int bps, short sampleSize, short bitDepth, short cbSize)
 {
     /// <summary>
     /// NOTE: Game executable appears to discard the format flag for BGM audio, which will always be read as 1 (PCM). Cutscene audio appears to be read as 0xFFFE, extended.
