@@ -1,8 +1,10 @@
-﻿using ASTRedux.Data.RSound.Sub;
+﻿using System.Runtime.InteropServices;
+using ASTRedux.Data.RSound.Sub;
 using ASTRedux.Utils;
 
 namespace ASTRedux.FileModels;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal class SoundFile
 {
     /* SNDL */

@@ -19,16 +19,16 @@ internal static class Program
     {
         var inputOption = new Option<FileSystemInfo>(
             name: "--input",
-            description: "The file to be processed")
+            description: "The file/directory to be processed")
             {
                 IsRequired = true
             };
 
         inputOption.AddAlias("-i");
 
-        var outputOption = new Option<FileInfo>(
+        var outputOption = new Option<FileSystemInfo>(
             name: "--output",
-            description: "Filename to be output")
+            description: "The file/directory to be output")
             {
                 IsRequired = true
             };
@@ -57,7 +57,7 @@ internal static class Program
         rootCommand.AddOption(verbosityLevel);
         rootCommand.AddOption(overwrite);
 
-        rootCommand.SetHandler((FileSystemInfo input, FileInfo output, LogDetail level, bool overwrite) =>
+        rootCommand.SetHandler((FileSystemInfo input, FileSystemInfo output, LogDetail level, bool overwrite) =>
         {
             Logger.VerbosityLevel = level;
 
@@ -81,7 +81,7 @@ internal static class Program
     /// </summary>
     /// <param name="input">A FileInfo object describing a file given on the CLI</param>
     /// <param name="output">A FileInfo object describing a file to be output on the CLI</param>
-    private static void Start(FileSystemInfo input, FileInfo output)
+    private static void Start(FileSystemInfo input, FileSystemInfo output)
     {
         if (!Validate(input, output))
             return;
@@ -95,14 +95,14 @@ internal static class Program
         SelectProcessingPipeline(input, output);
 
         if (Logger.VerbosityLevel != LogDetail.NONE)
-            File.WriteAllText($"{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.log", Logger.logOut.ToString());
+            File.WriteAllText($"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log", Logger.LogOut.ToString());
 
         Logger.Message("Log file written!", LogType.INFO);
 
         return;
     }
 
-    private static bool Validate(FileSystemInfo input, FileInfo output)
+    private static bool Validate(FileSystemInfo input, FileSystemInfo output)
     {
         switch(input)
         {
@@ -171,6 +171,10 @@ internal static class Program
     {
         Logger.Message("Processing branch reached!", LogType.INFO);
 
+
+        Logger.Message($"[DEBUG] Input type: {input.GetType().Name}, exists: {input.Exists}, extension: {input.Extension}", LogType.INFO);
+        Logger.Message($"[DEBUG] Output type: {output.GetType().Name}, exists: {output.Exists}, extension: {output.Extension}", LogType.INFO);
+
         SoundType type = GetProcessType(input, output);
 
         if(type == SoundType.INVALID)
@@ -230,11 +234,11 @@ internal static class Program
                         : SoundType.INVALID,
 
             (FileInfo inFile, DirectoryInfo outDir) =>
-                !outDir.Exists && FileExtensions.SoundExt.Contains(inFile.Extension)
+                FileExtensions.SoundExt.Contains(inFile.Extension)
                     ? SoundType.SOUND_IN
                     : SoundType.INVALID,
 
-            (DirectoryInfo inDir, DirectoryInfo outFile) =>
+            (DirectoryInfo inDir, FileInfo outFile) =>
                 inDir.Exists && FileExtensions.SoundExt.Contains(outFile.Extension)
                     ? SoundType.SOUND_OUT
                     : SoundType.INVALID,

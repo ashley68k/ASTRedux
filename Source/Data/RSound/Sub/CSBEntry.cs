@@ -1,10 +1,12 @@
-﻿using ASTRedux.Data.Format;
+﻿using System.Runtime.InteropServices;
+using ASTRedux.Data.Format;
 using ASTRedux.Utils.Consts;
 
 namespace ASTRedux.Data.RSound.Sub;
 
 // always padded to 0x40
-internal struct CSBEntry(WaveFormat fmt, int dataSize = 0, int dataOffset = 0)
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+internal struct CSBEntry(SampleFormat fmt, int dataSize = 0, int dataOffset = 0)
 {
     // size in bytes of the sound entry
     public int SoundDataSize = dataSize;
@@ -20,7 +22,8 @@ internal struct CSBEntry(WaveFormat fmt, int dataSize = 0, int dataOffset = 0)
     public uint FFPAD3 = Constants.FFFF_PAD;
     public uint FFPAD4 = Constants.FFFF_PAD;
     public uint FFPAD5 = Constants.FFFF_PAD;
-    public WaveFormat Format { get; private set; }
+
+    public SampleFormat Format = fmt;
 
     public uint FFPAD6 = Constants.FFFF_PAD;
     public uint FFPAD7 = Constants.FFFF_PAD;

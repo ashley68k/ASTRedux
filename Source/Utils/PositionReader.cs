@@ -16,11 +16,19 @@ internal static class PositionReader
     /// <returns>A 32-bit integer from the specified stream location</returns>
     public static int ReadInt32At(BinaryReader reader, long offset, string inFile = "")
     {
+        int output = 0;
+
+        long restorePos = reader.BaseStream.Position;
+
         reader.BaseStream.Position = offset;
 
-        Logger.Message($"int read at offset 0x{offset:X8} {(inFile != string.Empty ? $"from file {Path.GetFileName(inFile)}" : string.Empty)}", LogType.INFO);
+        output = reader.ReadInt32();
 
-        return reader.ReadInt32();
+        reader.BaseStream.Position = restorePos;
+
+        Logger.Message($"int (0x{output:X8}) read at offset 0x{offset:X8} {(inFile != string.Empty ? $"from file {Path.GetFileName(inFile)}" : string.Empty)}", LogType.INFO);
+
+        return output;
     }
 
     /// <summary>
@@ -32,11 +40,19 @@ internal static class PositionReader
     /// <returns>A 32-bit integer from the specified stream location</returns>
     public static uint ReadUInt32At(BinaryReader reader, long offset, string inFile = "")
     {
+        uint output = 0;
+
+        long restorePos = reader.BaseStream.Position;
+
         reader.BaseStream.Position = offset;
 
-        Logger.Message($"uint read at offset 0x{offset:X8} {(inFile != string.Empty ? $"from file {Path.GetFileName(inFile)}" : string.Empty)}", LogType.INFO);
+        output = reader.ReadUInt32();
 
-        return reader.ReadUInt32();
+        reader.BaseStream.Position = restorePos;
+
+        Logger.Message($"uint (0x{output:X8}) read at offset 0x{offset:X8} {(inFile != string.Empty ? $"from file {Path.GetFileName(inFile)}" : string.Empty)}", LogType.INFO);
+
+        return output;
     }
 
     /// <summary>
@@ -48,11 +64,19 @@ internal static class PositionReader
     /// <returns>A 16-bit integer from the specified stream location</returns>
     public static short ReadInt16At(BinaryReader reader, long offset, string inFile = "")
     {
+        short output = 0;
+
+        long restorePos = reader.BaseStream.Position;
+
         reader.BaseStream.Position = offset;
 
-        Logger.Message($"short read at offset 0x{offset:X8} {(inFile != string.Empty ? $"from file {Path.GetFileName(inFile)}" : string.Empty)}", LogType.INFO);
+        output = reader.ReadInt16();
 
-        return reader.ReadInt16();
+        reader.BaseStream.Position = restorePos;
+
+        Logger.Message($"short (0x{output:X4}) read at offset 0x{offset:X8} {(inFile != string.Empty ? $"from file {Path.GetFileName(inFile)}" : string.Empty)}", LogType.INFO);
+
+        return output;
     }
 
     /// <summary>
@@ -64,10 +88,18 @@ internal static class PositionReader
     /// <returns>A ushort from the specified stream location</returns>
     public static ushort ReadUInt16At(BinaryReader reader, long offset, string inFile = "")
     {
+        ushort output = 0;
+
+        long restorePos = reader.BaseStream.Position;
+
         reader.BaseStream.Position = offset;
 
-        Logger.Message($"ushort read at offset 0x{offset:X8} {(inFile != string.Empty ? $"from file {Path.GetFileName(inFile)}" : string.Empty)}", LogType.INFO);
+        output = reader.ReadUInt16();
 
-        return reader.ReadUInt16();
+        reader.BaseStream.Position = restorePos;
+
+        Logger.Message($"ushort (0x{output:X4}) read at offset 0x{offset:X8} {(inFile != string.Empty ? $"from file {Path.GetFileName(inFile)}" : string.Empty)}", LogType.INFO);
+
+        return output;
     }
 }

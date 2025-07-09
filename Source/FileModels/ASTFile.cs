@@ -47,7 +47,7 @@ internal class ASTFile
         {
             StartOffset = 0x800,
             Length = byteLength,
-            Format = new Data.Format.WaveFormat(
+            Format = new Data.Format.SampleFormat(
                 (short)fmt.Encoding,
                 (short)fmt.Channels,
                 fmt.SampleRate,
@@ -70,7 +70,7 @@ internal class ASTFile
         {
             StartOffset = PositionReader.ReadInt32At(reader, 0x10, filePath),
             Length = PositionReader.ReadInt32At(reader, 0x20, filePath),
-            Format = new Data.Format.WaveFormat(
+            Format = new Data.Format.SampleFormat(
                 PositionReader.ReadInt16At(reader, 0x30, filePath), // format flag
                 PositionReader.ReadInt16At(reader, 0x32, filePath), // channels
                 PositionReader.ReadInt32At(reader, 0x34, filePath), // sample rate

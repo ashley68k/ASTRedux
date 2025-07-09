@@ -15,9 +15,9 @@ namespace ASTRedux.Utils.Logging
 
         private static TimeSpan TotalTime = new();
 
-        private static string formatMessage = string.Empty;
+        private static string FormatMessage = string.Empty;
 
-        public static StringBuilder logOut { get; private set; } = new();
+        public static StringBuilder LogOut { get; private set; } = new();
 
         /// <summary>
         /// Sets colour based on the type of log
@@ -69,24 +69,24 @@ namespace ASTRedux.Utils.Logging
                 case LogDetail.NONE: 
                     break;
                 case LogDetail.LOW:
-                    formatMessage = $"[{type}]: {message}";
+                    FormatMessage = $"[{type}]: {message}";
                     break;
                 case LogDetail.MEDIUM:
-                    formatMessage = $"[{type}] @ Line {srcLine} in {memberName}: {message}";
+                    FormatMessage = $"[{type}] @ Line {srcLine} in {memberName}: {message}";
                     break;
                 case LogDetail.HIGH:
-                    formatMessage = $"[{type}] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
+                    FormatMessage = $"[{type}] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
                     break;
                 case LogDetail.EXTREME:
-                    formatMessage = $"\n{SW.Elapsed.TotalMilliseconds}ms elapsed/{TotalTime.TotalMilliseconds}ms total at {DateTime.Now.ToString("hh:mm:sstt")}\n[{type}] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
+                    FormatMessage = $"\n{SW.Elapsed.TotalMilliseconds}ms elapsed/{TotalTime.TotalMilliseconds}ms total at {DateTime.Now:hh:mm:sstt}\n[{type}] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
                     TotalTime += SW.Elapsed;
                     break;
             }
 
             SetColour(type);
 
-            logOut.Append(formatMessage);
-            Console.WriteLine(formatMessage);
+            LogOut.Append(FormatMessage);
+            Console.WriteLine(FormatMessage);
 
             if(VerbosityLevel == LogDetail.EXTREME)
                 SW.Restart();
@@ -111,7 +111,7 @@ namespace ASTRedux.Utils.Logging
 
             SetColour(LogType.ERROR);
 
-            logOut.Append(formatMessage);
+            LogOut.Append(formatMessage);
             Console.WriteLine(formatMessage);
 
             Console.ForegroundColor = ConsoleColor.White;

@@ -1,8 +1,9 @@
-﻿using ASTRedux.Utils.Consts;
+﻿using System.Runtime.InteropServices;
+using ASTRedux.Utils.Consts;
 
 namespace ASTRedux.Data.RSound;
 
-// 0x20 length
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal struct RSoundHeader
 {
     public const int FILE_MAGIC = 0x4C444E53; // sndl (sound, little endian)

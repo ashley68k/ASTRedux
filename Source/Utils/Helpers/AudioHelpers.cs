@@ -20,7 +20,7 @@ internal static class AudioHelpers
         return TimeSpan.FromSeconds((double)length / sampleSize / sampleRate);
     }
 
-    public static ManagedBass.WaveFormat WaveFormatFromAudioFormat(Data.Format.WaveFormat fmt)
+    public static ManagedBass.WaveFormat WaveFormatFromAudioFormat(Data.Format.SampleFormat fmt)
     {
         return new ManagedBass.WaveFormat(
             fmt.SampleRate,

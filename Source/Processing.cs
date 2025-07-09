@@ -1,4 +1,7 @@
-﻿using ASTRedux.FileModels;
+﻿using ASTRedux.Data.Format;
+using ASTRedux.Data.RSound;
+using ASTRedux.Data.RSound.Sub;
+using ASTRedux.FileModels;
 using ASTRedux.Utils;
 using ASTRedux.Utils.Helpers;
 using ASTRedux.Utils.Logging;
@@ -108,11 +111,88 @@ internal static class Processing
 
     public static void ProcessSoundIn(FileInfo input, DirectoryInfo output)
     {
-        // stub for now
+        using BinaryReader reader = new(File.OpenRead(input.FullName));
+
+        if (output.Exists && Config.OverwriteOutput)
+        {
+            if (!OverwritePrompt(output))
+                return;
+        }
+
+        if (!output.Exists)
+            output.Create();
+
+        // read csb start offset from file, get audio count from it, then copy into buffer
+        int csbStart = PositionReader.ReadInt32At(reader, 0x18);
+
+        int firstEntry = csbStart + PositionReader.ReadInt32At(reader, csbStart + 0x0C);
+        int currEntry = 0;
+
+        int audioCount = PositionReader.ReadInt32At(reader, csbStart + 0x08);
+        int audioStart = PositionReader.ReadInt32At(reader, csbStart + 0x10);
+
+        int soundSize = 0;
+        int soundOffset = 0;
+
+        for (int i = 0; i < audioCount; i++)
+        {
+            string outName = String.Empty;
+
+            currEntry = firstEntry + 0x40 * i;
+
+            SampleFormat csbFormat = new SampleFormat
+            {
+                FormatFlag = PositionReader.ReadInt16At(reader, currEntry + 0x20),
+                Channels = PositionReader.ReadInt16At(reader, currEntry + 0x22),
+                SampleRate = PositionReader.ReadInt32At(reader, currEntry + 0x24),
+                BytesPerSecond = PositionReader.ReadInt32At(reader, currEntry + 0x28),
+                SampleSize = PositionReader.ReadInt16At(reader, currEntry + 0x2C),
+                BitDepth = PositionReader.ReadInt16At(reader, currEntry + 0x2E),
+            };
+
+            soundSize = PositionReader.ReadInt32At(reader, currEntry + 0x00);
+            soundOffset = PositionReader.ReadInt32At(reader, currEntry + 0x04) + audioStart;
+
+            reader.BaseStream.Position = soundOffset;
+            byte[] outBuf = reader.ReadBytes(soundSize);
+
+            outName = Path.Combine($"{output.FullName}", $"{i+1}.wav");
+
+            using FileStream outStream = File.Create(outName);
+
+            using WaveFileWriter memWriter = new(outStream, AudioHelpers.WaveFormatFromAudioFormat(csbFormat));
+            memWriter.Write(outBuf, outBuf.Length);
+
+            Logger.Message($"File {outName} written!");
+        }
+
+        Bass.Free();
+
+        return;
     }
 
     public static void ProcessSoundOut(DirectoryInfo input, FileInfo output)
     {
         // stub for now
+    }
+
+    // prevent an rm -rf moment
+    private static bool OverwritePrompt(DirectoryInfo dir)
+    {
+        Console.WriteLine($"Are you sure you want to recursively delete and overwrite directory {dir.FullName}? (Y/N)");
+        char sel = char.ToLower((char)Console.Read());
+        switch (sel)
+        {
+            case 'y':
+                Console.WriteLine("Deleting...");
+                dir.Delete(true);
+                return true;
+            case 'n':
+                Console.WriteLine("Exiting!");
+                return false;
+            default:
+                Console.WriteLine("Invalid choice!");
+                return false;
+        }
     }
 }

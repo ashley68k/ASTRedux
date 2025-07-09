@@ -1,5 +1,8 @@
-﻿namespace ASTRedux.Data.RSound.Sub;
+﻿using System.Runtime.InteropServices;
 
+namespace ASTRedux.Data.RSound.Sub;
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal struct CSRHead
 {
     public const int CSR_MAGIC = 0x20525343; // csr (CSoundRequest?)

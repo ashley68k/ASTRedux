@@ -39,7 +39,7 @@ internal struct ASTHeader(ASTData data)
     public readonly uint FFFFPad_1 = 0xFFFFFFFF;
     public readonly uint FFFFPad_2 = 0xFFFFFFFF;
     public readonly uint FFFFPad_3 = 0xFFFFFFFF;
-    public WaveFormat Format { get; set; } = data.Format;
+    public SampleFormat Format { get; set; } = data.Format;
 
     public readonly int CBlockField1 = 0xC0000;
     public readonly int CBlockField2 = 0x42F001;

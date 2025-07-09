@@ -1,8 +1,10 @@
 ﻿using System.Reflection.Metadata;
+using System.Runtime.InteropServices;
 using ASTRedux.Utils.Consts;
 
 namespace ASTRedux.Data.RSound.Sub;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal struct CSBHead()
 {
     public const int CSB_MAGIC = 0x20425343; // csb (CSoundBank?)
