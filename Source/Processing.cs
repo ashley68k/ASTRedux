@@ -8,7 +8,10 @@ using ASTRedux.Utils;
 using ASTRedux.Utils.Consts;
 using ASTRedux.Utils.Helpers;
 using ASTRedux.Utils.Logging;
+using BinaryEx;
 using ManagedBass;
+using NaturalSort.Extension;
+
 
 namespace ASTRedux;
 
@@ -126,7 +129,7 @@ internal static class Processing
             output.Create();
 
         // read csb start offset from file, get audio count from it, then copy into buffer
-        int csbStart = PositionReader.ReadInt32At(reader, rSndOffsets.CSBPtrPosition);
+        int csbStart = PositionReader.ReadInt32At(reader, Offset.pCSBPosition);
 
         int firstEntry = csbStart + PositionReader.ReadInt32At(reader, csbStart + 0x0C);
         int currEntry = 0;
@@ -177,19 +180,86 @@ internal static class Processing
     public static void ProcessSoundOut(DirectoryInfo input, FileInfo output)
     {
         using BinaryReader reader = new(File.OpenRead(output.FullName));
+        using BinaryWriter writer = new(File.OpenWrite($"{output.FullName}.new"));
 
         // get data structure offsets from SNDL header
-        int csbOffset = PositionReader.ReadInt32At(reader, rSndOffsets.CSBPtrPosition);
-        int csbFirstEntryOffset = PositionReader.ReadInt32At(reader, rSndOffsets.CSBPtrPosition) + 0x20;
+        int csbOffset = PositionReader.ReadInt32At(reader, Offset.pCSBPosition);
+        int csbEntryOffset = PositionReader.ReadInt32At(reader, Offset.pCSBPosition) + 0x20;
 
         // fetch relative start of sound data from csb table, and then add offset of csb table to get absolute sound address
         int absoluteSndAddress = PositionReader.ReadInt32At(reader, csbOffset + 0x10) + csbOffset;
 
+        Logger.Message($"csb {csbOffset}");
+        Logger.Message($"csb entry {csbEntryOffset}");
+        Logger.Message($"absolutesndaddr {absoluteSndAddress}");
+
         // sound data containers for analyzeaudiodirectory
         List<byte[]> pcmBufs = [];
+        List<SampleFormat> pcmFmts = [];
 
         // fetch pcm buffers, sound count, and cumulative buffer size
-        AnalyzeAudioDirectory(input, out pcmBufs);
+        AnalyzeAudioDirectory(input, out pcmBufs, out pcmFmts);
+
+        // extract all header data from the rSound, including padding
+        byte[] headBuf = PositionReader.ReadByteRange(
+            reader,
+            0x0,
+            absoluteSndAddress);
+
+        // write cumulative buffer sizes to tally total output file size
+        headBuf.WriteInt32LE(Offset.FileSize, headBuf.Length + pcmBufs.Sum(pcm => pcm.Length));
+
+        Logger.Message($"Data length {headBuf.Length + pcmBufs.Sum(pcm => pcm.Length)}");
+
+        WriteCSB(headBuf, pcmBufs, pcmFmts, csbOffset, csbEntryOffset, absoluteSndAddress);
+
+        writer.Seek(0, SeekOrigin.Begin);
+        writer.Write(headBuf);
+
+        writer.Seek(absoluteSndAddress, SeekOrigin.Begin);
+        foreach (var pcm in pcmBufs)
+        {
+            writer.Write(pcm);
+        }
+    }
+
+    private static void WriteCSB(byte[] headBuf, List<byte[]> pcmBufs, List<SampleFormat> pcmFmts, int csbOff, int csbEntryOff, int sndAddr)
+    {
+        int currEntryOff = 0;
+        int sndCount = headBuf.ReadInt32LE(csbOff + Offset.csbSndNum);
+
+        // relative offset of end of file to first csb entry
+        headBuf.WriteInt32LE(csbOff + 0x04, pcmBufs.Sum(pcm => pcm.Length) + sndAddr - csbOff);
+        Logger.Message($"end of file from csb {pcmBufs.Sum(pcm => pcm.Length) + sndAddr - csbOff}");
+
+        // total audio data length
+        headBuf.WriteInt32LE(csbOff + 0x14, pcmBufs.Sum(pcm => pcm.Length));
+        Logger.Message($"Data length {pcmBufs.Sum(pcm => pcm.Length)}");
+
+        for (int i = 0; i < sndCount; i++)
+        {
+            // get base address of current csb entry (if i is 0, this is just base + 0, so still first entry)
+            currEntryOff = csbEntryOff + (0x40 * i);
+            Logger.Message($"Current entry {currEntryOff}");
+
+            headBuf.WriteInt32LE(currEntryOff, pcmBufs[i].Length);
+            Logger.Message($"Length {pcmBufs[i].Length}");
+            headBuf.WriteInt32LE(currEntryOff + 0x04, CalculateOffset(i, pcmBufs));
+            Logger.Message($"Offset {CalculateOffset(i, pcmBufs)}");
+
+            headBuf.WriteInt16LE(currEntryOff + 0x20, pcmFmts[i].FormatFlag);
+            Logger.Message($"Format flag {pcmFmts[i].FormatFlag}");
+            headBuf.WriteInt16LE(currEntryOff + 0x22, pcmFmts[i].Channels);
+            Logger.Message($"Channels {pcmFmts[i].Channels}");
+            headBuf.WriteInt32LE(currEntryOff + 0x24, pcmFmts[i].SampleRate);
+            Logger.Message($"Sample rate {pcmFmts[i].SampleRate}");
+            headBuf.WriteInt32LE(currEntryOff + 0x28, pcmFmts[i].BytesPerSecond);
+            Logger.Message($"BPS {pcmFmts[i].BytesPerSecond}");
+            headBuf.WriteInt16LE(currEntryOff + 0x2C, pcmFmts[i].SampleSize);
+            Logger.Message($"Block align {pcmFmts[i].SampleSize}");
+            headBuf.WriteInt16LE(currEntryOff + 0x2E, pcmFmts[i].BitDepth);
+            Logger.Message($"Bit depth {pcmFmts[i].BitDepth}");
+        }
     }
 
     /// <summary>
@@ -199,12 +269,15 @@ internal static class Processing
     /// <param name="eachLen">Every length in bytes of pcm buffer as list of ints</param>
     /// <param name="count">Number of files enumerated</param>
     /// <returns>Length in bytes of all PCM buffers</returns>
-    public static void AnalyzeAudioDirectory(DirectoryInfo dir, out List<byte[]> pcmBufs)
+    public static void AnalyzeAudioDirectory(DirectoryInfo dir, out List<byte[]> pcmBufs, out List<SampleFormat> fmt)
     {
         pcmBufs = [];
+        fmt = [];
 
-        foreach (var file in dir.EnumerateFiles().OrderBy(f => f.Name))
+        foreach (var file in dir.EnumerateFiles().OrderBy(x => x.Name, StringComparison.OrdinalIgnoreCase.WithNaturalSort()))
         {
+            Logger.Message($"File {file.Name} being processed!");
+
             int streamHnd = Bass.CreateStream(file.FullName, 0, 0, BassFlags.Decode | BassFlags.Prescan);
 
             ChannelInfo ch = Bass.ChannelGetInfo(streamHnd);
@@ -215,6 +288,8 @@ internal static class Processing
 
             byte[] pcmBuffer = new byte[totalLength];
             int bytesRead = Bass.ChannelGetData(streamHnd, pcmBuffer, totalLength);
+
+            fmt.Add(new((short)ch.Channels, ch.Frequency, 16));
 
             pcmBufs.Add(pcmBuffer);
 

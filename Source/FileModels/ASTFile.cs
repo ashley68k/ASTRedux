@@ -53,8 +53,7 @@ internal class ASTFile
                 fmt.SampleRate,
                 fmt.AverageBytesPerSecond,
                 (short)fmt.BlockAlign,
-                (short)fmt.BitsPerSample,
-                0
+                (short)fmt.BitsPerSample
             ),
         };
         Header = new ASTHeader(AudioInfo);
@@ -70,14 +69,13 @@ internal class ASTFile
         {
             StartOffset = PositionReader.ReadInt32At(reader, 0x10, filePath),
             Length = PositionReader.ReadInt32At(reader, 0x20, filePath),
-            Format = new Data.Format.SampleFormat(
+            Format = new SampleFormat(
                 PositionReader.ReadInt16At(reader, 0x30, filePath), // format flag
                 PositionReader.ReadInt16At(reader, 0x32, filePath), // channels
                 PositionReader.ReadInt32At(reader, 0x34, filePath), // sample rate
                 PositionReader.ReadInt32At(reader, 0x38, filePath), // bytes per second
                 PositionReader.ReadInt16At(reader, 0x3C, filePath), // block size
-                PositionReader.ReadInt16At(reader, 0x3E, filePath), // bit depth
-                0
+                PositionReader.ReadInt16At(reader, 0x3E, filePath) // bit depth
             ),
         };
         Header = new ASTHeader(AudioInfo);
