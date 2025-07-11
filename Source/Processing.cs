@@ -129,13 +129,17 @@ internal static class Processing
             output.Create();
 
         // read csb start offset from file, get audio count from it, then copy into buffer
-        int csbStart = PositionReader.ReadInt32At(reader, Offset.pCSBPosition);
+        int csbOffset = PositionReader.ReadInt32At(reader, Offset.pCSBPosition);
+        Logger.Message($"CSB base address: 0x{csbOffset:x8}");
+        int csbEntryOffset = PositionReader.ReadInt32At(reader, Offset.pCSBPosition) + 0x20;
+        Logger.Message($"CSB entry base address: 0x{csbEntryOffset:x8}");
 
-        int firstEntry = csbStart + PositionReader.ReadInt32At(reader, csbStart + 0x0C);
         int currEntry = 0;
 
-        int audioCount = PositionReader.ReadInt32At(reader, csbStart + 0x08);
-        int audioStart = PositionReader.ReadInt32At(reader, csbStart + 0x10);
+        int audioCount = PositionReader.ReadInt32At(reader, csbOffset + 0x08);
+        Logger.Message($"Audio count: 0x{audioCount:x8}");
+        int audioStart = PositionReader.ReadInt32At(reader, csbOffset + 0x10) + csbOffset;
+        Logger.Message($"Audio start: 0x{audioStart:x8}");
 
         int soundSize = 0;
         int soundOffset = 0;
@@ -144,7 +148,8 @@ internal static class Processing
         {
             string outName = String.Empty;
 
-            currEntry = firstEntry + 0x40 * i;
+            currEntry = csbEntryOffset + 0x40 * i;
+            Logger.Message($"Current CSB entry address: 0x{currEntry:x8}");
 
             SampleFormat csbFormat = new()
             {
@@ -158,6 +163,8 @@ internal static class Processing
 
             soundSize = PositionReader.ReadInt32At(reader, currEntry + 0x00);
             soundOffset = PositionReader.ReadInt32At(reader, currEntry + 0x04) + audioStart;
+            Logger.Message($"Sound size: 0x{soundSize:x8}");
+            Logger.Message($"Sound offset: 0x{soundOffset:x8} | Relative: 0x{PositionReader.ReadInt32At(reader, currEntry + 0x04):x8} + Absolute base: 0x{audioStart:x8}");
 
             reader.BaseStream.Position = soundOffset;
             byte[] outBuf = reader.ReadBytes(soundSize);
@@ -189,9 +196,9 @@ internal static class Processing
         // fetch relative start of sound data from csb table, and then add offset of csb table to get absolute sound address
         int absoluteSndAddress = PositionReader.ReadInt32At(reader, csbOffset + 0x10) + csbOffset;
 
-        Logger.Message($"csb {csbOffset}");
-        Logger.Message($"csb entry {csbEntryOffset}");
-        Logger.Message($"absolutesndaddr {absoluteSndAddress}");
+        Logger.Message($"CSB base structure offset: 0x{csbOffset:x8}");
+        Logger.Message($"CSB entry base offset: 0x{csbEntryOffset:x8}");
+        Logger.Message($"Absolute start address of audio data: 0x{absoluteSndAddress:x8}");
 
         // sound data containers for analyzeaudiodirectory
         List<byte[]> pcmBufs = [];
@@ -221,44 +228,48 @@ internal static class Processing
         {
             writer.Write(pcm);
         }
+
+        Logger.Message($"Audio write complete!");
     }
 
     private static void WriteCSB(byte[] headBuf, List<byte[]> pcmBufs, List<SampleFormat> pcmFmts, int csbOff, int csbEntryOff, int sndAddr)
     {
         int currEntryOff = 0;
         int sndCount = headBuf.ReadInt32LE(csbOff + Offset.csbSndNum);
+        Logger.Message($"Sound count {sndCount} fetched");
 
         // relative offset of end of file to first csb entry
         headBuf.WriteInt32LE(csbOff + 0x04, pcmBufs.Sum(pcm => pcm.Length) + sndAddr - csbOff);
-        Logger.Message($"end of file from csb {pcmBufs.Sum(pcm => pcm.Length) + sndAddr - csbOff}");
+        Logger.Message($"End of file relative offset from CSB: 0x{pcmBufs.Sum(pcm => pcm.Length) + sndAddr - csbOff:x8}");
 
         // total audio data length
         headBuf.WriteInt32LE(csbOff + 0x14, pcmBufs.Sum(pcm => pcm.Length));
-        Logger.Message($"Data length {pcmBufs.Sum(pcm => pcm.Length)}");
+        Logger.Message($"0x{pcmBufs.Sum(pcm => pcm.Length):x8} PCM buffer summed length");
 
         for (int i = 0; i < sndCount; i++)
         {
             // get base address of current csb entry (if i is 0, this is just base + 0, so still first entry)
             currEntryOff = csbEntryOff + (0x40 * i);
-            Logger.Message($"Current entry {currEntryOff}");
+            Logger.Message($"Current CSB entry begins at 0x{currEntryOff:x8}");
 
             headBuf.WriteInt32LE(currEntryOff, pcmBufs[i].Length);
-            Logger.Message($"Length {pcmBufs[i].Length}");
+            Logger.Message($"PCM Buffer Length 0x{pcmBufs[i].Length:X8}");
             headBuf.WriteInt32LE(currEntryOff + 0x04, CalculateOffset(i, pcmBufs));
-            Logger.Message($"Offset {CalculateOffset(i, pcmBufs)}");
+            Logger.Message($"Relative PCM Offset 0x{CalculateOffset(i, pcmBufs):x8}");
 
+            Logger.Message("Starting sample format write...");
             headBuf.WriteInt16LE(currEntryOff + 0x20, pcmFmts[i].FormatFlag);
-            Logger.Message($"Format flag {pcmFmts[i].FormatFlag}");
+            Logger.Message($"{pcmFmts[i].FormatFlag} format flag");
             headBuf.WriteInt16LE(currEntryOff + 0x22, pcmFmts[i].Channels);
-            Logger.Message($"Channels {pcmFmts[i].Channels}");
+            Logger.Message($"{pcmFmts[i].Channels} channels");
             headBuf.WriteInt32LE(currEntryOff + 0x24, pcmFmts[i].SampleRate);
-            Logger.Message($"Sample rate {pcmFmts[i].SampleRate}");
+            Logger.Message($"{pcmFmts[i].SampleRate}khz Sample Rate");
             headBuf.WriteInt32LE(currEntryOff + 0x28, pcmFmts[i].BytesPerSecond);
-            Logger.Message($"BPS {pcmFmts[i].BytesPerSecond}");
+            Logger.Message($"{pcmFmts[i].BytesPerSecond} bytes per second");
             headBuf.WriteInt16LE(currEntryOff + 0x2C, pcmFmts[i].SampleSize);
-            Logger.Message($"Block align {pcmFmts[i].SampleSize}");
+            Logger.Message($"{pcmFmts[i].SampleSize} bytes per sample");
             headBuf.WriteInt16LE(currEntryOff + 0x2E, pcmFmts[i].BitDepth);
-            Logger.Message($"Bit depth {pcmFmts[i].BitDepth}");
+            Logger.Message($"{pcmFmts[i].BitDepth}-bit PCM");
         }
     }
 
