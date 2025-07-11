@@ -85,7 +85,7 @@ namespace ASTRedux.Utils.Logging
 
             SetColour(type);
 
-            LogOut.Append(FormatMessage);
+            LogOut.Append($"{FormatMessage}\n");
             Console.WriteLine(FormatMessage);
 
             if(VerbosityLevel == LogDetail.EXTREME)
@@ -107,12 +107,12 @@ namespace ASTRedux.Utils.Logging
             [CallerFilePath] string srcPath = "",
             [CallerLineNumber] int srcLine = 0)
         {
-            string formatMessage = $"\n[ERROR] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
+            string FormatMessage = $"\n[ERROR] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
 
             SetColour(LogType.ERROR);
 
-            LogOut.Append(formatMessage);
-            Console.WriteLine(formatMessage);
+            LogOut.Append($"{FormatMessage}\n");
+            Console.WriteLine(FormatMessage);
 
             Console.ForegroundColor = ConsoleColor.White;
         }

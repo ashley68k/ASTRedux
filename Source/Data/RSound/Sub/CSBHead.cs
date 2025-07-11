@@ -5,9 +5,9 @@ using ASTRedux.Utils.Consts;
 namespace ASTRedux.Data.RSound.Sub;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-internal struct CSBHead()
+internal struct CSBHead
 {
-    public const int CSB_MAGIC = 0x20425343; // csb (CSoundBank?)
+    public readonly int CSB_MAGIC = 0x20425343; // csb (CSoundBank?)
 
     // file end - csb head start
     public int DataSize;
@@ -27,4 +27,13 @@ internal struct CSBHead()
     public int Unknown = 1;
 
     public uint FFPAD = Constants.FFFF_PAD;
+
+    public CSBHead(int dataSize, int waveCnt, int csbStart, int audioStart, int audioSize)
+    {
+        DataSize = dataSize;
+        WaveCount = waveCnt;
+        CSBEntryStart = csbStart;
+        AudioStart = audioStart;
+        TotalAudioSize = audioSize;
+    }
 }

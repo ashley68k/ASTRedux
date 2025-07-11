@@ -121,11 +121,11 @@ internal static class Program
                     return false;
                 }
 
-                if (dir.FullName != null && !BASSHelpers.IsBassPresent(dir.FullName))
+                /*if (dir.FullName != null && !BASSHelpers.IsBassPresent(dir.FullName))
                 {
                     Logger.CriticalMessage("BASS library doesn't exist!");
                     return false;
-                }
+                }*/
 
                 break;
         }
@@ -170,10 +170,6 @@ internal static class Program
     private static void SelectProcessingPipeline(FileSystemInfo input, FileSystemInfo output)
     {
         Logger.Message("Processing branch reached!", LogType.INFO);
-
-
-        Logger.Message($"[DEBUG] Input type: {input.GetType().Name}, exists: {input.Exists}, extension: {input.Extension}", LogType.INFO);
-        Logger.Message($"[DEBUG] Output type: {output.GetType().Name}, exists: {output.Exists}, extension: {output.Extension}", LogType.INFO);
 
         SoundType type = GetProcessType(input, output);
 

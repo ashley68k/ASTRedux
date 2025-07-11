@@ -102,4 +102,18 @@ internal static class PositionReader
 
         return output;
     }
+
+    public static byte[] ReadByteRange(BinaryReader reader, int startOffset, int endOffset)
+    {
+        int restorePos = (int)reader.BaseStream.Position;
+        int length = endOffset - startOffset;
+
+        reader.BaseStream.Position = startOffset;
+
+        byte[] output = reader.ReadBytes(length);
+
+        reader.BaseStream.Position = restorePos;
+
+        return output;
+    }
 }

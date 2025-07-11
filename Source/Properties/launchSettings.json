@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ASTRedux": {
-      "commandName": "Project",
-      "commandLineArgs": "--input test.spc --output test.wav"
-    }
-  }
-}

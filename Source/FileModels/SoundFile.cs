@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using ASTRedux.Data.RSound;
 using ASTRedux.Data.RSound.Sub;
 using ASTRedux.Utils;
 
@@ -19,14 +20,18 @@ internal class SoundFile
         return streamMagic == LITTLE_ENDIAN_MAGIC || streamMagic == BIG_ENDIAN_MAGIC;
     }
 
+    RSoundHeader RSoundHeader = new RSoundHeader();
+
     // data structures
 
-    /*private CSRHead CSR_head;
-    private List<CSREntry> CSR_entries;
+    /*public CSRHead CSR_head;
+    public List<CSREntry> CSR_entries;
 
-    private CSHHead CSH_head;
-    private List<CSHEntry> CSH_entries;
+    public CSHHead CSH_head;
+    public List<CSHEntry> CSH_entries;*/
 
-    private CSBHead CSB_head;
-    private List<CSBEntry> CSB_entries;*/
+    public CSBHead CSB_head;
+    public List<CSBEntry> CSB_entries;
+
+    public required List<byte[]> pcmBuffers;
 }

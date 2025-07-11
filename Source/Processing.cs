@@ -1,8 +1,11 @@
-﻿using ASTRedux.Data.Format;
+﻿using System.Drawing;
+using System.Linq;
+using ASTRedux.Data.Format;
 using ASTRedux.Data.RSound;
 using ASTRedux.Data.RSound.Sub;
 using ASTRedux.FileModels;
 using ASTRedux.Utils;
+using ASTRedux.Utils.Consts;
 using ASTRedux.Utils.Helpers;
 using ASTRedux.Utils.Logging;
 using ManagedBass;
@@ -123,7 +126,7 @@ internal static class Processing
             output.Create();
 
         // read csb start offset from file, get audio count from it, then copy into buffer
-        int csbStart = PositionReader.ReadInt32At(reader, 0x18);
+        int csbStart = PositionReader.ReadInt32At(reader, rSndOffsets.CSBPtrPosition);
 
         int firstEntry = csbStart + PositionReader.ReadInt32At(reader, csbStart + 0x0C);
         int currEntry = 0;
@@ -140,7 +143,7 @@ internal static class Processing
 
             currEntry = firstEntry + 0x40 * i;
 
-            SampleFormat csbFormat = new SampleFormat
+            SampleFormat csbFormat = new()
             {
                 FormatFlag = PositionReader.ReadInt16At(reader, currEntry + 0x20),
                 Channels = PositionReader.ReadInt16At(reader, currEntry + 0x22),
@@ -173,12 +176,63 @@ internal static class Processing
 
     public static void ProcessSoundOut(DirectoryInfo input, FileInfo output)
     {
-        // stub for now
+        using BinaryReader reader = new(File.OpenRead(output.FullName));
+
+        // get data structure offsets from SNDL header
+        int csbOffset = PositionReader.ReadInt32At(reader, rSndOffsets.CSBPtrPosition);
+        int csbFirstEntryOffset = PositionReader.ReadInt32At(reader, rSndOffsets.CSBPtrPosition) + 0x20;
+
+        // fetch relative start of sound data from csb table, and then add offset of csb table to get absolute sound address
+        int absoluteSndAddress = PositionReader.ReadInt32At(reader, csbOffset + 0x10) + csbOffset;
+
+        // sound data containers for analyzeaudiodirectory
+        List<byte[]> pcmBufs = [];
+
+        // fetch pcm buffers, sound count, and cumulative buffer size
+        AnalyzeAudioDirectory(input, out pcmBufs);
     }
+
+    /// <summary>
+    /// Returns the cumulative length in bytes of the raw PCM buffers of a directory of audio files, along with the individual lengths and number of files.
+    /// </summary>
+    /// <param name="dir">A DirectoryInfo object containing the directory to be scanned</param>
+    /// <param name="eachLen">Every length in bytes of pcm buffer as list of ints</param>
+    /// <param name="count">Number of files enumerated</param>
+    /// <returns>Length in bytes of all PCM buffers</returns>
+    public static void AnalyzeAudioDirectory(DirectoryInfo dir, out List<byte[]> pcmBufs)
+    {
+        pcmBufs = [];
+
+        foreach (var file in dir.EnumerateFiles().OrderBy(f => f.Name))
+        {
+            int streamHnd = Bass.CreateStream(file.FullName, 0, 0, BassFlags.Decode | BassFlags.Prescan);
+
+            ChannelInfo ch = Bass.ChannelGetInfo(streamHnd);
+            int totalLength = Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) <= int.MaxValue ? (int)Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) : 0;
+
+            if (totalLength == 0)
+                Logger.CriticalMessage("Audio length can not be determined!");
+
+            byte[] pcmBuffer = new byte[totalLength];
+            int bytesRead = Bass.ChannelGetData(streamHnd, pcmBuffer, totalLength);
+
+            pcmBufs.Add(pcmBuffer);
+
+            Bass.StreamFree(streamHnd);
+        }
+    }
+    /// <summary>
+    /// Calculates the relative offset of an rSound wave block from absolute sound start address through cumulatively tallying all lengths prior.
+    /// </summary>
+    /// <param name="baseOffset">Offset of first byte of first audio chunk</param>
+    /// <param name="count">What audio file are we processing?</param>
+    /// <param name="lengths">Lengths of all audio files</param>
+    /// <returns>Offset for the nth audio file, specified by count</returns>
+    public static int CalculateOffset(int index, List<byte[]> pcmBufs) => pcmBufs.Take(index).Sum(len => len.Length);
 
     // prevent an rm -rf moment
     private static bool OverwritePrompt(DirectoryInfo dir)
-    {
+    { 
         Console.WriteLine($"Are you sure you want to recursively delete and overwrite directory {dir.FullName}? (Y/N)");
         char sel = char.ToLower((char)Console.Read());
         switch (sel)
