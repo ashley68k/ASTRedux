@@ -59,30 +59,7 @@ internal static class Processing
 
         using BinaryWriter writer = new(File.OpenWrite(output.FullName));
 
-        int streamHnd = Bass.CreateStream(input.FullName, 0, 0, BassFlags.Decode | BassFlags.Prescan);
-
-        Logger.Message("BASS stream created!", LogType.INFO);
-
-        if (streamHnd == 0) {
-            Logger.CriticalMessage("Stream is null!");
-            return;
-        }
-
-        ChannelInfo ch = Bass.ChannelGetInfo(streamHnd);
-        int totalLength = Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) <= int.MaxValue ? (int)Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) : 0;
-
-        if (totalLength == 0) {
-            Logger.CriticalMessage("Audio length can not be determined!");
-            return;
-        }
-
-        byte[] pcmBuffer = new byte[totalLength];
-        int bytesRead = Bass.ChannelGetData(streamHnd, pcmBuffer, totalLength);
-
-        if (bytesRead <= 0) {
-            Logger.CriticalMessage("No bytes read to buffer!");
-            return;
-        }
+        CreateAudioBuffer(input.FullName, out byte[] pcmBuffer, out ChannelInfo ch);
 
         Logger.Message("Bytes read from BASS stream", LogType.INFO);
 
@@ -94,7 +71,7 @@ internal static class Processing
                 16,
                 ch.Channels
             ),
-            totalLength
+            pcmBuffer.Length
         );
 
         Logger.Message("AST object created!", LogType.INFO);
@@ -273,6 +250,45 @@ internal static class Processing
         }
     }
 
+    private static void CreateAudioBuffer(string path, out byte[] pcmBuffer, out ChannelInfo audioData)
+    {
+        byte[] holdBuffer = [];
+        pcmBuffer = [];
+        audioData = new ChannelInfo();
+
+        int streamHnd = Bass.CreateStream(path, 0, 0, BassFlags.Decode | BassFlags.Prescan);
+
+        Logger.Message("BASS stream created!", LogType.INFO);
+
+        if (streamHnd == 0)
+        {
+            Logger.CriticalMessage("Stream is null!");
+            return;
+        }
+
+        audioData = Bass.ChannelGetInfo(streamHnd);
+        int totalLength = Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) <= int.MaxValue ? (int)Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) : 0;
+
+        if (totalLength == 0)
+        {
+            Logger.CriticalMessage("Audio length can not be determined!");
+            return;
+        }
+
+        holdBuffer = new byte[totalLength];
+        int bytesRead = Bass.ChannelGetData(streamHnd, holdBuffer, totalLength);
+
+        if (bytesRead <= 0)
+        {
+            Logger.CriticalMessage("No bytes read to buffer!");
+            return;
+        }
+
+        Bass.StreamFree(streamHnd);
+
+        pcmBuffer = holdBuffer;
+    }
+
     /// <summary>
     /// Returns the cumulative length in bytes of the raw PCM buffers of a directory of audio files, along with the individual lengths and number of files.
     /// </summary>
@@ -289,22 +305,11 @@ internal static class Processing
         {
             Logger.Message($"File {file.Name} being processed!");
 
-            int streamHnd = Bass.CreateStream(file.FullName, 0, 0, BassFlags.Decode | BassFlags.Prescan);
-
-            ChannelInfo ch = Bass.ChannelGetInfo(streamHnd);
-            int totalLength = Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) <= int.MaxValue ? (int)Bass.ChannelGetLength(streamHnd, PositionFlags.Bytes) : 0;
-
-            if (totalLength == 0)
-                Logger.CriticalMessage("Audio length can not be determined!");
-
-            byte[] pcmBuffer = new byte[totalLength];
-            int bytesRead = Bass.ChannelGetData(streamHnd, pcmBuffer, totalLength);
+            CreateAudioBuffer(file.FullName, out byte[] pcmBuffer, out ChannelInfo ch);
 
             fmt.Add(new((short)ch.Channels, ch.Frequency, 16));
 
             pcmBufs.Add(pcmBuffer);
-
-            Bass.StreamFree(streamHnd);
         }
     }
     /// <summary>

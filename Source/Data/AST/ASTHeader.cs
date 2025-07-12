@@ -41,6 +41,8 @@ internal struct ASTHeader(ASTData data)
     public readonly uint FFFFPad_3 = 0xFFFFFFFF;
     public SampleFormat Format { get; set; } = data.Format;
 
+    public readonly short CBSize = 0x0000;
+
     public readonly int CBlockField1 = 0xC0000;
     public readonly int CBlockField2 = 0x42F001;
     public readonly int CBlockField3 = 0xC;
