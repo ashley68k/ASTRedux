@@ -61,7 +61,8 @@ namespace ASTRedux.Utils.Logging
                 return;
             }
 
-            if (VerbosityLevel == LogDetail.NONE)
+            // let warnings and other future logtypes passthrough
+            if (VerbosityLevel == LogDetail.NONE && type == LogType.INFO)
                 return;
 
             switch (VerbosityLevel)

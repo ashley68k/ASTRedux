@@ -46,7 +46,7 @@ internal static class Program
         var verbosityLevel = new Option<LogDetail>(
             name: "--verbose",
             description: "Verbosity/logging level",
-            getDefaultValue: () => LogDetail.NONE
+            getDefaultValue: () => LogDetail.LOW
             );
 
         verbosityLevel.AddAlias("-v");
@@ -57,7 +57,7 @@ internal static class Program
         rootCommand.AddOption(verbosityLevel);
         rootCommand.AddOption(overwrite);
 
-        rootCommand.SetHandler((FileSystemInfo input, FileSystemInfo output, LogDetail level, bool overwrite) =>
+        rootCommand.SetHandler(async (FileSystemInfo input, FileSystemInfo output, LogDetail level, bool overwrite) =>
         {
             Logger.VerbosityLevel = level;
 
@@ -68,7 +68,7 @@ internal static class Program
 
             if ((input != null) && (output != null))
             {
-                Start(input, output);
+                await Start(input, output);
             }
         }, inputOption, outputOption, verbosityLevel, overwrite);
 
@@ -81,9 +81,9 @@ internal static class Program
     /// </summary>
     /// <param name="input">A FileInfo object describing a file given on the CLI</param>
     /// <param name="output">A FileInfo object describing a file to be output on the CLI</param>
-    private static void Start(FileSystemInfo input, FileSystemInfo output)
+    private async static Task Start(FileSystemInfo input, FileSystemInfo output)
     {
-        if (!Validate(input, output))
+        if (!await Validate(input, output))
             return;
 
         Logger.Message("All validations passed!", LogType.INFO);
@@ -102,14 +102,15 @@ internal static class Program
         return;
     }
 
-    private static bool Validate(FileSystemInfo input, FileSystemInfo output)
+    private static async Task<bool> Validate(FileSystemInfo input, FileSystemInfo output)
     {
         switch(input)
         {
             case FileInfo file:
                 if (file.DirectoryName != null && !BASSHelpers.IsBassPresent(file.DirectoryName))
                 {
-                    Logger.CriticalMessage("BASS library doesn't exist!");
+                    Logger.Message("BASS library doesn't exist, downloading and extracting now!", LogType.WARNING);
+                    await DependencyGrabber.GrabBassLibrary();
                     return false;
                 }
                 break;
