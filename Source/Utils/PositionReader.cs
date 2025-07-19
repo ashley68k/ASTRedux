@@ -16,7 +16,7 @@ internal static class PositionReader
     /// <returns>A 32-bit integer from the specified stream location</returns>
     public static int ReadInt32At(BinaryReader reader, long offset, string inFile = "")
     {
-        int output = 0;
+        int output;
 
         long restorePos = reader.BaseStream.Position;
 
@@ -40,7 +40,7 @@ internal static class PositionReader
     /// <returns>A 32-bit integer from the specified stream location</returns>
     public static uint ReadUInt32At(BinaryReader reader, long offset, string inFile = "")
     {
-        uint output = 0;
+        uint output;
 
         long restorePos = reader.BaseStream.Position;
 
@@ -64,7 +64,7 @@ internal static class PositionReader
     /// <returns>A 16-bit integer from the specified stream location</returns>
     public static short ReadInt16At(BinaryReader reader, long offset, string inFile = "")
     {
-        short output = 0;
+        short output;
 
         long restorePos = reader.BaseStream.Position;
 
@@ -88,7 +88,7 @@ internal static class PositionReader
     /// <returns>A ushort from the specified stream location</returns>
     public static ushort ReadUInt16At(BinaryReader reader, long offset, string inFile = "")
     {
-        ushort output = 0;
+        ushort output;
 
         long restorePos = reader.BaseStream.Position;
 

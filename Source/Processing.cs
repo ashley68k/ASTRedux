@@ -59,7 +59,8 @@ internal static class Processing
 
         using BinaryWriter writer = new(File.OpenWrite(output.FullName));
 
-        CreateAudioBuffer(input.FullName, out byte[] pcmBuffer, out ChannelInfo ch);
+        if (!CreateAudioBuffer(input.FullName, false, out byte[] pcmBuffer, out ChannelInfo ch))
+            Logger.CriticalMessage("Audio buffer creation failed!");
 
         Logger.Message("Bytes read from BASS stream", LogType.INFO);
 
@@ -182,7 +183,11 @@ internal static class Processing
         List<SampleFormat> pcmFmts = [];
 
         // fetch pcm buffers, sound count, and cumulative buffer size
-        AnalyzeAudioDirectory(input, out pcmBufs, out pcmFmts);
+        if(!AnalyzeRSndDirectory(input, out pcmBufs, out pcmFmts))
+        {
+            Logger.CriticalMessage("Failed to extract audio data from directory!");
+            return;
+        }
 
         // extract all header data from the rSound, including padding
         byte[] headBuf = PositionReader.ReadByteRange(
@@ -250,20 +255,35 @@ internal static class Processing
         }
     }
 
-    private static void CreateAudioBuffer(string path, out byte[] pcmBuffer, out ChannelInfo audioData)
+
+
+    /// <summary>
+    /// Create a raw PCM byte stream using ManagedBass
+    /// </summary>
+    /// <param name="path">Path to file to import</param>
+    /// <param name="useMono">Should stream be created as mono? (necessary for rSound)</param>
+    /// <param name="pcmBuffer">Byte array containing the raw sample data</param>
+    /// <param name="audioData">A ChannelInfo struct containing data about the PCM buffer</param>
+    /// <returns>A bool representing whether buffer creation was successful or not</returns>
+    private static bool CreateAudioBuffer(string path, bool useMono, out byte[] pcmBuffer, out ChannelInfo audioData)
     {
-        byte[] holdBuffer = [];
+        byte[] holdBuffer;
         pcmBuffer = [];
         audioData = new ChannelInfo();
 
-        int streamHnd = Bass.CreateStream(path, 0, 0, BassFlags.Decode | BassFlags.Prescan);
+        BassFlags bassFlags = BassFlags.Decode | BassFlags.Prescan;
+
+        if (useMono)
+            bassFlags |= BassFlags.Mono;
+
+        int streamHnd = Bass.CreateStream(path, 0, 0, bassFlags);
 
         Logger.Message("BASS stream created!", LogType.INFO);
 
         if (streamHnd == 0)
         {
             Logger.CriticalMessage("Stream is null!");
-            return;
+            return false;
         }
 
         audioData = Bass.ChannelGetInfo(streamHnd);
@@ -272,7 +292,7 @@ internal static class Processing
         if (totalLength == 0)
         {
             Logger.CriticalMessage("Audio length can not be determined!");
-            return;
+            return false;
         }
 
         holdBuffer = new byte[totalLength];
@@ -281,12 +301,14 @@ internal static class Processing
         if (bytesRead <= 0)
         {
             Logger.CriticalMessage("No bytes read to buffer!");
-            return;
+            return false;
         }
 
         Bass.StreamFree(streamHnd);
 
         pcmBuffer = holdBuffer;
+
+        return true;
     }
 
     /// <summary>
@@ -296,7 +318,7 @@ internal static class Processing
     /// <param name="eachLen">Every length in bytes of pcm buffer as list of ints</param>
     /// <param name="count">Number of files enumerated</param>
     /// <returns>Length in bytes of all PCM buffers</returns>
-    public static void AnalyzeAudioDirectory(DirectoryInfo dir, out List<byte[]> pcmBufs, out List<SampleFormat> fmt)
+    public static bool AnalyzeRSndDirectory(DirectoryInfo dir, out List<byte[]> pcmBufs, out List<SampleFormat> fmt)
     {
         pcmBufs = [];
         fmt = [];
@@ -305,13 +327,21 @@ internal static class Processing
         {
             Logger.Message($"File {file.Name} being processed!");
 
-            CreateAudioBuffer(file.FullName, out byte[] pcmBuffer, out ChannelInfo ch);
+            if (!CreateAudioBuffer(file.FullName, true, out byte[] pcmBuffer, out ChannelInfo ch))
+            {
+                Logger.CriticalMessage("Audio buffer creation failed!");
+                return false;
+            }
 
+            // BASS is very unreliable at reporting bit depth
             fmt.Add(new((short)ch.Channels, ch.Frequency, 16));
 
             pcmBufs.Add(pcmBuffer);
         }
+
+        return true;
     }
+
     /// <summary>
     /// Calculates the relative offset of an rSound wave block from absolute sound start address through cumulatively tallying all lengths prior.
     /// </summary>

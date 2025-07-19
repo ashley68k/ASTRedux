@@ -20,7 +20,7 @@ internal class SoundFile
         return streamMagic == LITTLE_ENDIAN_MAGIC || streamMagic == BIG_ENDIAN_MAGIC;
     }
 
-    RSoundHeader RSoundHeader = new RSoundHeader();
+    RSoundHeader RSoundHeader = new();
 
     // data structures
 
@@ -30,8 +30,8 @@ internal class SoundFile
     public CSHHead CSH_head;
     public List<CSHEntry> CSH_entries;*/
 
-    public CSBHead CSB_head;
-    public List<CSBEntry> CSB_entries;
+    /*public CSBHead CSB_head;
+    public List<CSBEntry> CSB_entries;*/
 
     public required List<byte[]> pcmBuffers;
 }

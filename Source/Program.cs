@@ -229,7 +229,7 @@ internal static class Program
                         ? SoundType.AST_OUT
                         : SoundType.INVALID,
 
-            (FileInfo inFile, DirectoryInfo outDir) =>
+            (FileInfo inFile, DirectoryInfo) =>
                 FileExtensions.SoundExt.Contains(inFile.Extension)
                     ? SoundType.SOUND_IN
                     : SoundType.INVALID,
