@@ -13,7 +13,7 @@ namespace ASTRedux;
 
 internal static class DependencyGrabber
 {
-    private static string bassFile = $"bass24{OSUtils.GetBassDownloadSuffix()}.zip";
+    private static readonly string bassFile = $"bass24{OSUtils.GetBassDownloadSuffix()}.zip";
 
     /// <summary>
     /// A generic async downloader to be used for dependency acquisition for convenience, 
@@ -109,9 +109,15 @@ internal static class DependencyGrabber
 
         if (!string.IsNullOrEmpty(bassFile) && Path.Exists(bassFile))
             System.IO.File.Delete(bassFile);
+        else
+            Logger.CriticalMessage("Attempted to delete a NULL file!");
 
-        Logger.Message($"{bassFile} deleted! Exiting in 3 seconds! Please re-run your command! (up-arrow then enter)");
+            Logger.Message($"BASS installation finished!\n\n" +
+                $"You can install BASS plugins from https://www.un4seen.com/ by selecting the plugin's {OSUtils.GetOSString()} download.\n" +
+                $"Simply put the plugin's x64 .{OSUtils.LibraryExtension()} file in the root directory of your ASTRedux installation.\n" +
+                $"Exiting in 5 seconds! Please re-run your command upon returning to CLI to process the intended file! (up-arrow then enter)");
 
-        await Task.Delay(3000);
+
+        await Task.Delay(5000);
     }
 }

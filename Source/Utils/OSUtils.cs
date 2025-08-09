@@ -36,6 +36,12 @@ internal static class OSUtils
         OperatingSystem.IsMacOS() ? "" :
         throw new PlatformNotSupportedException("Unsupported OS platform.");
 
+    public static string GetOSString() =>
+        OperatingSystem.IsWindows() ? "Windows" :
+        OperatingSystem.IsLinux() ? "Linux" :
+        OperatingSystem.IsMacOS() ? "Mac OS" :
+        throw new PlatformNotSupportedException("Unsupported OS platform.");
+
     /* all are from LE BASS binaries observed in HxD */
     public static uint GetPEMagic() =>
         // ugly hack including part of the dos stub to keep compat with mac and linux using 32-bit magic over 16-bit magic
