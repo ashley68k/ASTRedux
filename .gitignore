@@ -484,3 +484,4 @@ $RECYCLE.BIN/
 *.swp
 /.editorconfig
 /Source/Properties/launchSettings.json
+.vscode/launch.json

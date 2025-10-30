@@ -81,7 +81,7 @@ internal static class Program
     /// </summary>
     /// <param name="input">A FileInfo object describing a file given on the CLI</param>
     /// <param name="output">A FileInfo object describing a file to be output on the CLI</param>
-    private async static Task Start(FileSystemInfo input, FileSystemInfo output)
+    private async static Task Start(FileSystemInfo input, FileSystemInfo? output)
     {
         if (!await Validate(input, output))
             return;
@@ -102,7 +102,7 @@ internal static class Program
         return;
     }
 
-    private static async Task<bool> Validate(FileSystemInfo input, FileSystemInfo output)
+    private static async Task<bool> Validate(FileSystemInfo input, FileSystemInfo? output)
     {
         switch(input)
         {
@@ -141,7 +141,7 @@ internal static class Program
 
         Logger.Message("BASS initialized!", LogType.INFO);
 
-        if (input.FullName == output.FullName)
+        if (output is not null && (input.FullName == output.FullName))
         {
             Logger.CriticalMessage("Attempted to overwrite input!");
             return false;
@@ -156,12 +156,6 @@ internal static class Program
         }
 
         Logger.Message("Input exists!", LogType.INFO);
-
-        if (output.Exists && !Config.OverwriteOutput)
-        {
-            Logger.CriticalMessage("Output already exists!");
-            return false;
-        }
 
         Logger.Message(Config.OverwriteOutput ? "Overwriting output file!" : "Output file doesn't exist!", LogType.INFO);
 
@@ -213,36 +207,37 @@ internal static class Program
         }
     }
 
-    private static SoundType GetProcessType(FileSystemInfo input, out FileSystemInfo? output)
+    private static SoundType GetProcessType(FileSystemInfo input, out FileSystemInfo? placeholder)
     {
         // create default output placeholders for convenience
         if(input is FileInfo)
         {
             if(Ext.SoundExt.Contains(input.Extension))
             {
-                output = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, input.Name));
+                placeholder = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, input.Name));
                 return SoundType.SOUND_IN;
             }
             else if(Ext.ASTExt.Contains(input.Extension))
             {
-                output = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".wav"));
+                
+                placeholder = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".wav"));
                 return SoundType.AST_IN;
             }
             else
             {
                 // BASS can have arbitrary plugins, so interpret every other file as a possible input and handle the error from BASS later if it isn't a proper sound.
-                output = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".rSoundAst"));
+                placeholder = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".rSoundAst"));
                 return SoundType.AST_OUT;
             }
         }
         else if(input is DirectoryInfo)
         {
-            output = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".rSoundSnd"));
+            placeholder = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".rSoundSnd"));
             return SoundType.SOUND_OUT;
         }
         else
         {
-            output = null;
+            placeholder = null;
             return SoundType.INVALID;
         }
     }
