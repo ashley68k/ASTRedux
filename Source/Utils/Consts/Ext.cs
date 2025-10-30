@@ -1,6 +1,6 @@
 ﻿namespace ASTRedux.Utils.Consts;
 
-internal static class FileExtensions
+internal static class Ext
 {
     public static HashSet<string> ASTExt = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -9,6 +9,6 @@ internal static class FileExtensions
 
     public static HashSet<string> SoundExt = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".rSoundSnd"
+        ".rSoundSnd", ".snd"
     };
 }

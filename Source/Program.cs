@@ -26,11 +26,11 @@ internal static class Program
 
         inputOption.AddAlias("-i");
 
-        var outputOption = new Option<FileSystemInfo>(
+        var outputOption = new Option<FileSystemInfo?>(
             name: "--output",
             description: "The file/directory to be output")
             {
-                IsRequired = true
+                IsRequired = false
             };
 
         outputOption.AddAlias("-o");
@@ -57,7 +57,7 @@ internal static class Program
         rootCommand.AddOption(verbosityLevel);
         rootCommand.AddOption(overwrite);
 
-        rootCommand.SetHandler(async (FileSystemInfo input, FileSystemInfo output, LogDetail level, bool overwrite) =>
+        rootCommand.SetHandler(async (input, output, level, overwrite) =>
         {
             Logger.VerbosityLevel = level;
 
@@ -88,7 +88,7 @@ internal static class Program
 
         Logger.Message("All validations passed!", LogType.INFO);
 
-        CheckForPlugins(input);
+        PluginLoader.LoadPlugins(Environment.CurrentDirectory);
 
         Logger.Message("Plugin check complete!", LogType.INFO);
 
@@ -168,11 +168,20 @@ internal static class Program
         return true;
     }
 
-    private static void SelectProcessingPipeline(FileSystemInfo input, FileSystemInfo output)
+    private static void SelectProcessingPipeline(FileSystemInfo input, FileSystemInfo? output = null)
     {
         Logger.Message("Processing branch reached!", LogType.INFO);
 
-        SoundType type = GetProcessType(input, output);
+        SoundType type = GetProcessType(input, out FileSystemInfo? placeholder);
+
+        FileSystemInfo? outPlace = output is not null ? output : placeholder;
+
+        // true in the case that placeholder recieves invalid value
+        if(outPlace is null)
+        {
+            Logger.CriticalMessage("Output invalid!");
+            return;
+        }
 
         if(type == SoundType.INVALID)
         {
@@ -187,60 +196,54 @@ internal static class Program
             // further guarded by the above invalid check.
             case SoundType.AST_IN:
                 Logger.Message($"File {input.Extension} -> {output.Extension} path, run ProcessAST()", LogType.INFO);
-                Processing.ProcessAST(input as FileInfo, output as FileInfo);
+                Processing.ProcessAST(input as FileInfo, outPlace as FileInfo);
                 break;
             case SoundType.AST_OUT:
                 Logger.Message($"File {input.Extension} -> {output.Extension} path, run ProcessMusic()", LogType.INFO);
-                Processing.ProcessMusic(input as FileInfo, output as FileInfo);
+                Processing.ProcessMusic(input as FileInfo, outPlace as FileInfo);
                 break;
             case SoundType.SOUND_IN:
                 Logger.Message($"File {input.Extension} -> {output.FullName} path, run ProcessSoundIn()", LogType.INFO);
-                Processing.ProcessSoundIn(input as FileInfo, output as DirectoryInfo);
+                Processing.ProcessSoundIn(input as FileInfo, outPlace as DirectoryInfo);
                 break;
             case SoundType.SOUND_OUT:
                 Logger.Message($"File {input.Extension} -> {output.FullName} path, run ProcessSoundOut()", LogType.INFO);
-                Processing.ProcessSoundOut(input as DirectoryInfo, output as FileInfo);
+                Processing.ProcessSoundOut(input as DirectoryInfo, outPlace as FileInfo);
                 break;
         }
     }
 
-    private static void CheckForPlugins(FileSystemInfo input)
+    private static SoundType GetProcessType(FileSystemInfo input, out FileSystemInfo? output)
     {
-        switch(input)
+        // create default output placeholders for convenience
+        if(input is FileInfo)
         {
-            case FileInfo inFile:
-                if (!string.IsNullOrEmpty(inFile.DirectoryName))
-                    PluginLoader.LoadPlugins(inFile.DirectoryName);
-                    break;
-            case DirectoryInfo inDir:
-                if (!string.IsNullOrEmpty(inDir.FullName))
-                    PluginLoader.LoadPlugins(inDir.FullName);
-                    break;
+            if(Ext.SoundExt.Contains(input.Extension))
+            {
+                output = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, input.Name));
+                return SoundType.SOUND_IN;
+            }
+            else if(Ext.ASTExt.Contains(input.Extension))
+            {
+                output = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".wav"));
+                return SoundType.AST_IN;
+            }
+            else
+            {
+                // BASS can have arbitrary plugins, so interpret every other file as a possible input and handle the error from BASS later if it isn't a proper sound.
+                output = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".rSoundAst"));
+                return SoundType.AST_OUT;
+            }
         }
-    }
-
-    private static SoundType GetProcessType(FileSystemInfo input, FileSystemInfo output)
-    {
-        return (input, output) switch
+        else if(input is DirectoryInfo)
         {
-            (FileInfo inFile, FileInfo outFile) =>
-                FileExtensions.ASTExt.Contains(inFile.Extension) && outFile.Extension == ".wav"
-                    ? SoundType.AST_IN
-                    : FileExtensions.ASTExt.Contains(outFile.Extension)
-                        ? SoundType.AST_OUT
-                        : SoundType.INVALID,
-
-            (FileInfo inFile, DirectoryInfo) =>
-                FileExtensions.SoundExt.Contains(inFile.Extension)
-                    ? SoundType.SOUND_IN
-                    : SoundType.INVALID,
-
-            (DirectoryInfo inDir, FileInfo outFile) =>
-                inDir.Exists && FileExtensions.SoundExt.Contains(outFile.Extension)
-                    ? SoundType.SOUND_OUT
-                    : SoundType.INVALID,
-
-            _ => SoundType.INVALID
-        };
+            output = new FileInfo(Path.Combine(Environment.CurrentDirectory, input.Name, ".rSoundSnd"));
+            return SoundType.SOUND_OUT;
+        }
+        else
+        {
+            output = null;
+            return SoundType.INVALID;
+        }
     }
 }
