@@ -15,11 +15,20 @@ public partial class MainWindow : Window
 
         Logger.OnLogMessage += WriteLog;
 
+        Logger.VerbosityLevel = LogDetail.LOW;
+
         SetLabels();
+
+        Logger.Message("Welcome to ASTRedux!");
     }
 
     private void SetLabels()
     {
+        // this gets called at startup, just don't allow this to run
+        // if we're gonna end up accessing a null object
+        if (ModeTab == null)
+            return;
+
         switch (ModeTab.SelectedIndex)
         {
             case SFX_MODE:
@@ -36,6 +45,9 @@ public partial class MainWindow : Window
     // convert Dead Rising format file to standard audio format
     private void Decode(object? sender, RoutedEventArgs e)
     {
+        if (ModeTab == null)
+            return;
+
         switch (ModeTab.SelectedIndex)
         {
             case SFX_MODE:
@@ -48,6 +60,10 @@ public partial class MainWindow : Window
     // create a file of Dead Rising format
     private void Encode(object? sender, RoutedEventArgs e)
     {
+        // just to be safe
+        if (ModeTab == null)
+            return;
+
         switch (ModeTab.SelectedIndex)
         {
             case SFX_MODE:

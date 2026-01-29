@@ -29,16 +29,20 @@
     </Window.Styles>
 
     <!--actual window content-->
-    <Grid ColumnDefinitions="*, *, *, *, *, *, *, *" RowDefinitions="*, *, *, *, *, *, *, *"  Margin="16">
+    <Viewbox Stretch="Uniform">
+    <Grid ColumnDefinitions="*, *, *, *, *, *, *, *" 
+          RowDefinitions="*, *, *, *, *, *, *, *"  
+          Margin="16"
+          Width="800" Height="450">
         <TabControl Name="ModeTab" 
                     Grid.Column="0" Grid.Row="0" 
                     Grid.RowSpan="1" Grid.ColumnSpan="6"
                     SelectionChanged="ModeTab_SelectionChanged"
         >
-			<TabItem Name="SFXTab"
-                     Header="Sound Effects"/>
+		    <TabItem Name="SFXTab"
+                        Header="Sound Effects"/>
             <TabItem Name="MusicTab"
-                     Header="Music"/>
+                        Header="Music"/>
         </TabControl>
         <TextBlock x:Name="LogWindow"
                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -50,8 +54,9 @@
         </ProgressBar>
         <StackPanel Grid.Row="1" Grid.Column="6" Grid.ColumnSpan="2">
         <ComboBox Name="LogSelect"
-                  Margin="20,0,0,0"
-                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    Margin="20,0,0,0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    SelectedIndex="1">
             <ComboBoxItem Content="No Logging" IsSelected="False"/>
             <ComboBoxItem Content="Low" IsSelected="True"/>
             <ComboBoxItem Content="Medium" IsSelected="False"/>
@@ -59,8 +64,8 @@
             <ComboBoxItem Content="Extreme" IsSelected="False"/>
         </ComboBox>
         <Label Margin="20,0,0,0"
-               HorizontalContentAlignment="Left" VerticalContentAlignment="Center" 
-               Target="LogSelect">Log Detail</Label>
+                HorizontalContentAlignment="Left" VerticalContentAlignment="Center" 
+                Target="LogSelect">Log Detail</Label>
         </StackPanel>
         <Button Name="DecodeBtn"
                 Grid.Row="7" Grid.Column="0" 
@@ -76,5 +81,12 @@
                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                 Click="Encode">
         </Button>
+        <TextBlock Grid.Row="7" Grid.Column="6"
+                    Grid.ColumnSpan="2" Grid.RowSpan="2"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+            by lunarmeadow,<LineBreak />
+            2025 - 2026.<LineBreak />
+        </TextBlock>
     </Grid>
+    </Viewbox>
 </Window>
