@@ -29,16 +29,54 @@
     </Window.Styles>
 
     <!--actual window content-->
-    <TabControl Margin="8">
+    <TabControl Margin="16">
         <TabItem Header="Sound Effects">
-            <Grid ColumnDefinitions="*,8*,*" RowDefinitions="*,Auto,*" Margin="4">
-                <TextBlock Text="Test"
+            <Grid ColumnDefinitions="*, *, *, *, *, *, *, *" RowDefinitions="*, *, *, *, *, *, *, *"  Margin="16">
+                <TextBlock Text="SFX Logger"
                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                           Grid.Row="0" Grid.Column="1"/>
+                           Grid.Row="0" Grid.Column="1" 
+                           Grid.RowSpan="6" Grid.ColumnSpan="6">
+                </TextBlock>
+                <ProgressBar Grid.Row="6" Grid.Column="1" 
+                             Grid.ColumnSpan="6">
+                </ProgressBar>
+                <Button Content="Convert rSound to Folder"
+                        Grid.Row="7" Grid.Column="1" 
+                        Grid.ColumnSpan="2" Grid.RowSpan="2" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                </Button>
+                <Button Content="Convert Folder to rSound"
+                        Grid.Row="7" Grid.Column="5" 
+                        Grid.ColumnSpan="2" Grid.RowSpan="2" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                </Button>
             </Grid>
         </TabItem>
         <TabItem Header="Music">
-        
+            <Grid ColumnDefinitions="*, *, *, *, *, *, *, *" RowDefinitions="*, *, *, *, *, *, *, *"  Margin="16">
+                <TextBlock Text="Music Logger"
+                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                           Grid.Row="0" Grid.Column="1" 
+                           Grid.RowSpan="6" Grid.ColumnSpan="6">
+                </TextBlock>
+                <ProgressBar Grid.Row="6" Grid.Column="1" 
+                             Grid.ColumnSpan="6">
+                </ProgressBar>
+                <Button Content="Convert AST to Music File"
+                        Grid.Row="7" Grid.Column="1" 
+                        Grid.ColumnSpan="2" Grid.RowSpan="2" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                </Button>
+                <Button Content="Convert Music File to AST"
+                        Grid.Row="7" Grid.Column="5" 
+                        Grid.ColumnSpan="2" Grid.RowSpan="2" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                </Button>
+            </Grid>
         </TabItem>
     </TabControl>
 </Window>
