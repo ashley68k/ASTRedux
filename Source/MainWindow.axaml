@@ -44,11 +44,12 @@
             <TabItem Name="MusicTab"
                         Header="Music"/>
         </TabControl>
-        <TextBlock x:Name="LogWindow"
-                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                Grid.Row="1" Grid.Column="0" 
-                Grid.RowSpan="5" Grid.ColumnSpan="6">
-        </TextBlock>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                      Grid.Row="1" Grid.Column="0" 
+                      Grid.RowSpan="5" Grid.ColumnSpan="6">
+            <TextBlock x:Name="LogWindow"
+                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        </ScrollViewer>
         <ProgressBar Grid.Row="6" Grid.Column="0" 
                     Grid.ColumnSpan="6">
         </ProgressBar>
