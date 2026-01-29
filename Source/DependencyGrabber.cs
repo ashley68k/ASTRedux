@@ -1,12 +1,14 @@
-﻿using System;
+﻿using ASTRedux.Utils;
+using ASTRedux.Utils.Logging;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ASTRedux.Utils;
-using ASTRedux.Utils.Logging;
 using static System.Net.WebRequestMethods;
 
 namespace ASTRedux;
@@ -74,6 +76,9 @@ internal static class DependencyGrabber
 
         string bassLibUrl = $"https://www.un4seen.com/files/";
 
+        if (Path.Exists(Path.Combine(AppContext.BaseDirectory, bassFile)))
+            return;
+
         if (!await DownloadAsync(bassLibUrl, bassFile))
         {
             Logger.CriticalMessage("BASS acquisition failed!");
@@ -88,7 +93,6 @@ internal static class DependencyGrabber
             string attemptPath = Path.Combine($"{OSUtils.GetBassZipPath()}", $"{OSUtils.GetBassLibraryName()}.{OSUtils.LibraryExtension()}").Replace("\\", "/");
             try
             {
-
                 var filterZip = arc.Entries.Single(entry => entry.FullName
                     == attemptPath);
 
@@ -113,11 +117,15 @@ internal static class DependencyGrabber
             Logger.CriticalMessage("Attempted to delete a NULL file!");
 
             Logger.Message($"BASS installation finished!\n\n" +
-                $"You can install BASS plugins from https://www.un4seen.com/ by selecting the plugin's {OSUtils.GetOSString()} download.\n" +
-                $"Simply put the plugin's x64 .{OSUtils.LibraryExtension()} file in the root directory of your ASTRedux installation.\n" +
-                $"Exiting in 5 seconds! Please re-run your command upon returning to CLI to process the intended file! (up-arrow then enter)");
+                $"You can install BASS plugins from https://www.un4seen.com/\nby selecting the plugin's {OSUtils.GetOSString()} download.\n" +
+                $"Simply put the plugin's x64 .{OSUtils.LibraryExtension()} file\nin the root directory of your ASTRedux installation.\n" +
+                $"Exiting in 10 seconds!\nPlease relaunch ASTRedux!");
 
+        await Task.Delay(10000);
 
-        await Task.Delay(5000);
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+        {
+            lifetime.Shutdown();
+        }
     }
 }

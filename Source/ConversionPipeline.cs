@@ -8,6 +8,7 @@ using ASTRedux.Utils;
 using ASTRedux.Utils.Consts;
 using ASTRedux.Utils.Helpers;
 using ASTRedux.Utils.Logging;
+using Avalonia.Platform.Storage;
 using BinaryEx;
 using ManagedBass;
 using NaturalSort.Extension;
@@ -15,14 +16,19 @@ using NaturalSort.Extension;
 
 namespace ASTRedux;
 
-internal static class Processing
+internal static class ConversionPipeline
 {
-    public static void ProcessAST(FileInfo input, FileInfo output)
+    public static void DecodeAST(IStorageFile input, IStorageFile output)
     {
+        if (input.TryGetLocalPath() == null)
+            throw new FileNotFoundException("No path for input file.");
+        if (output.TryGetLocalPath() == null)
+            throw new FileNotFoundException("No path for output file.");
+
         Logger.Message("Input is valid!", LogType.INFO);
 
-        using BinaryReader reader = new(input.OpenRead());
-        using FileStream outStream = output.Create();
+        using BinaryReader reader = new(File.OpenRead(input.TryGetLocalPath()));
+        using FileStream outStream = File.OpenWrite(output.TryGetLocalPath());
 
         if (!ASTFile.ValidateMagic(reader)) {
             Logger.CriticalMessage("Header doesn't match AST file!");
@@ -31,7 +37,7 @@ internal static class Processing
 
         Logger.Message("AST magic matches!", LogType.INFO);
 
-        ASTFile ast = new(reader, input.FullName);
+        ASTFile ast = new(reader, input.TryGetLocalPath());
 
         Logger.Message("AST header built!", LogType.INFO);
 
@@ -50,16 +56,18 @@ internal static class Processing
         Logger.Message("BASS freed!", LogType.INFO);
     }
 
-    public static void ProcessMusic(FileInfo input, FileInfo output)
+    public static void EncodeAST(IStorageFile input, IStorageFile output)
     {
-        if (Config.OverwriteOutput)
-            output.Delete();
+        if (input.TryGetLocalPath() == null)
+            throw new FileNotFoundException("No path for input file.");
+        if (output.TryGetLocalPath() == null)
+            throw new FileNotFoundException("No path for output file.");
 
         Logger.Message("Input is valid!", LogType.INFO);
 
-        using BinaryWriter writer = new(File.OpenWrite(output.FullName));
+        using BinaryWriter writer = new(File.OpenWrite(output.Name));
 
-        if (!CreateAudioBuffer(input.FullName, false, out byte[] pcmBuffer, out ChannelInfo ch))
+        if (!CreateAudioBuffer(input.TryGetLocalPath(), false, out byte[] pcmBuffer, out ChannelInfo ch))
             Logger.CriticalMessage("Audio buffer creation failed!");
 
         Logger.Message("Bytes read from BASS stream", LogType.INFO);
@@ -93,18 +101,16 @@ internal static class Processing
         Logger.Message("BASS freed!", LogType.INFO);
     }
 
-    public static void ProcessSoundIn(FileInfo input, DirectoryInfo output)
+    public static void DecodeSound(IStorageFile input, IStorageFolder output)
     {
-        using BinaryReader reader = new(File.OpenRead(input.FullName));
+        if (input.TryGetLocalPath() == null)
+            throw new FileNotFoundException("No path for input file.");
+        if (output.TryGetLocalPath() == null)
+            throw new DirectoryNotFoundException("No path for output directory.");
 
-        if (output.Exists && Config.OverwriteOutput)
-        {
-            if (!OverwritePrompt(output))
-                return;
-        }
+        Logger.Message("Input is valid!", LogType.INFO);
 
-        if (!output.Exists)
-            output.Create();
+        using BinaryReader reader = new(File.OpenRead(input.Name));
 
         // read csb start offset from file, get audio count from it, then copy into buffer
         int csbOffset = PositionReader.ReadInt32At(reader, Offset.pCSBPosition);
@@ -147,7 +153,7 @@ internal static class Processing
             reader.BaseStream.Position = soundOffset;
             byte[] outBuf = reader.ReadBytes(soundSize);
 
-            outName = Path.Combine($"{output.FullName}", $"{i+1}.wav");
+            outName = Path.Combine($"{output.TryGetLocalPath()}", $"{i+1}.wav");
 
             using FileStream outStream = File.Create(outName);
 
@@ -162,10 +168,17 @@ internal static class Processing
         return;
     }
 
-    public static void ProcessSoundOut(DirectoryInfo input, FileInfo output)
+    public static void EncodeSound(IStorageFolder input, IStorageFile output)
     {
-        using BinaryReader reader = new(File.OpenRead(output.FullName));
-        using BinaryWriter writer = new(File.OpenWrite($"{output.FullName}.new"));
+        if (input.TryGetLocalPath() == null)
+            throw new DirectoryNotFoundException("No path for input directory.");
+        if (output.TryGetLocalPath() == null)
+            throw new FileNotFoundException("No path for output file.");
+
+        Logger.Message("Input is valid!", LogType.INFO);
+
+        using BinaryReader reader = new(File.OpenRead(output.Name));
+        using BinaryWriter writer = new(File.OpenWrite($"{output.Name}.new"));
 
         // get data structure offsets from SNDL header
         int csbOffset = PositionReader.ReadInt32At(reader, Offset.pCSBPosition);
@@ -318,16 +331,19 @@ internal static class Processing
     /// <param name="eachLen">Every length in bytes of pcm buffer as list of ints</param>
     /// <param name="count">Number of files enumerated</param>
     /// <returns>Length in bytes of all PCM buffers</returns>
-    public static bool AnalyzeRSndDirectory(DirectoryInfo dir, out List<byte[]> pcmBufs, out List<SampleFormat> fmt)
+    public static bool AnalyzeRSndDirectory(IStorageFolder dir, out List<byte[]> pcmBufs, out List<SampleFormat> fmt)
     {
         pcmBufs = [];
         fmt = [];
 
-        foreach (var file in dir.EnumerateFiles().OrderBy(x => x.Name, StringComparison.OrdinalIgnoreCase.WithNaturalSort()))
-        {
-            Logger.Message($"File {file.Name} being processed!");
+        if(dir.TryGetLocalPath() == null)
+            throw new DirectoryNotFoundException("No path for input directory.");
 
-            if (!CreateAudioBuffer(file.FullName, true, out byte[] pcmBuffer, out ChannelInfo ch))
+        foreach (var file in Directory.EnumerateFiles(dir.TryGetLocalPath()).OrderBy(x => x, StringComparison.OrdinalIgnoreCase.WithNaturalSort()))
+        {
+            Logger.Message($"File {file} being processed!");
+
+            if (!CreateAudioBuffer(file, true, out byte[] pcmBuffer, out ChannelInfo ch))
             {
                 Logger.CriticalMessage("Audio buffer creation failed!");
                 return false;
@@ -350,24 +366,4 @@ internal static class Processing
     /// <param name="lengths">Lengths of all audio files</param>
     /// <returns>Offset for the nth audio file, specified by count</returns>
     public static int CalculateOffset(int index, List<byte[]> pcmBufs) => pcmBufs.Take(index).Sum(len => len.Length);
-
-    // prevent an rm -rf moment
-    private static bool OverwritePrompt(DirectoryInfo dir)
-    { 
-        Console.WriteLine($"Are you sure you want to recursively delete and overwrite directory {dir.FullName}? (Y/N)");
-        char sel = char.ToLower((char)Console.Read());
-        switch (sel)
-        {
-            case 'y':
-                Console.WriteLine("Deleting...");
-                dir.Delete(true);
-                return true;
-            case 'n':
-                Console.WriteLine("Exiting!");
-                return false;
-            default:
-                Console.WriteLine("Invalid choice!");
-                return false;
-        }
-    }
 }

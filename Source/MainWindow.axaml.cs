@@ -34,6 +34,8 @@ public partial class MainWindow : Window
 
         SetLabels();
 
+        DependencyGrabber.GrabBassLibrary();
+
         PluginLoader.LoadPlugins(Environment.CurrentDirectory);
         Logger.Message("Plugin check complete!", LogType.INFO);
 
@@ -83,6 +85,7 @@ public partial class MainWindow : Window
                     Title = "Select folder to decode to",
                     AllowMultiple = false
                 });
+                ConversionPipeline.DecodeSound(soundIn[0], soundOut[0]);
                 break;
             case MUSIC_MODE:
                 // file -> file
@@ -96,6 +99,7 @@ public partial class MainWindow : Window
                 {
                     Title = "Select audio file to decode to"
                 });
+                ConversionPipeline.DecodeAST(musicIn[0], musicOut);
                 break;
         }
 
@@ -122,21 +126,22 @@ public partial class MainWindow : Window
                 });
                 var soundOut = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
-                    Title = "Select rSound file to encode to"
+                    Title = "Select rSound file to encode to",
                 });
+                ConversionPipeline.EncodeSound(soundIn[0], soundOut);
                 break;
             case MUSIC_MODE:
                 // file -> file
                 var musicIn = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "Select audio file to encode from",
-                    FileTypeFilter = new[] { musicType },
                     AllowMultiple = false
                 });
                 var musicOut = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
                     Title = "Select AST file to encode to"
                 });
+                ConversionPipeline.EncodeAST(musicIn[0], musicOut);
                 break;
         }
 
