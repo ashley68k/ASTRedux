@@ -20,15 +20,15 @@ internal static class ConversionPipeline
 {
     public static void DecodeAST(IStorageFile input, IStorageFile output)
     {
-        if (input.TryGetLocalPath() == null)
+        if (input.Path.AbsolutePath == null)
             throw new FileNotFoundException("No path for input file.");
-        if (output.TryGetLocalPath() == null)
+        if (output.Path.AbsolutePath == null)
             throw new FileNotFoundException("No path for output file.");
 
         Logger.Message("Input is valid!", LogType.INFO);
 
-        using BinaryReader reader = new(File.OpenRead(input.TryGetLocalPath()));
-        using FileStream outStream = File.OpenWrite(output.TryGetLocalPath());
+        using BinaryReader reader = new(File.OpenRead(input.Path.AbsolutePath));
+        using FileStream outStream = File.OpenWrite(output.Path.AbsolutePath);
 
         if (!ASTFile.ValidateMagic(reader)) {
             Logger.CriticalMessage("Header doesn't match AST file!");
@@ -37,7 +37,7 @@ internal static class ConversionPipeline
 
         Logger.Message("AST magic matches!", LogType.INFO);
 
-        ASTFile ast = new(reader, input.TryGetLocalPath());
+        ASTFile ast = new(reader, input.Path.AbsolutePath);
 
         Logger.Message("AST header built!", LogType.INFO);
 
@@ -50,24 +50,20 @@ internal static class ConversionPipeline
         memWriter.Write(outputBuffer, outputBuffer.Length);
 
         Logger.Message("Buffer written to .wav!", LogType.INFO);
-
-        Bass.Free();
-
-        Logger.Message("BASS freed!", LogType.INFO);
     }
 
     public static void EncodeAST(IStorageFile input, IStorageFile output)
     {
-        if (input.TryGetLocalPath() == null)
+        if (input.Path.AbsolutePath == null)
             throw new FileNotFoundException("No path for input file.");
-        if (output.TryGetLocalPath() == null)
+        if (output.Path.AbsolutePath == null)
             throw new FileNotFoundException("No path for output file.");
 
         Logger.Message("Input is valid!", LogType.INFO);
 
-        using BinaryWriter writer = new(File.OpenWrite(output.Name));
+        using BinaryWriter writer = new(File.OpenWrite(output.Path.AbsolutePath));
 
-        if (!CreateAudioBuffer(input.TryGetLocalPath(), false, out byte[] pcmBuffer, out ChannelInfo ch))
+        if (!CreateAudioBuffer(input.Path.AbsolutePath, false, out byte[] pcmBuffer, out ChannelInfo ch))
             Logger.CriticalMessage("Audio buffer creation failed!");
 
         Logger.Message("Bytes read from BASS stream", LogType.INFO);
@@ -95,22 +91,18 @@ internal static class ConversionPipeline
         Logger.Message("PCM buffer written!", LogType.INFO);
 
         //Console.WriteLine($"Audio conversion to .ast finished! Audio duration is {AudioHelpers.GetAudioLength(ast.AudioInfo.Format.SampleRate, ast.AudioInfo.Format.BlockSize, ast.AudioInfo.Length):mm\\:ss\\.ff}.");
-
-        Bass.Free();
-
-        Logger.Message("BASS freed!", LogType.INFO);
     }
 
     public static void DecodeSound(IStorageFile input, IStorageFolder output)
     {
-        if (input.TryGetLocalPath() == null)
+        if (input.Path.AbsolutePath == null)
             throw new FileNotFoundException("No path for input file.");
-        if (output.TryGetLocalPath() == null)
+        if (output.Path.AbsolutePath == null)
             throw new DirectoryNotFoundException("No path for output directory.");
 
         Logger.Message("Input is valid!", LogType.INFO);
 
-        using BinaryReader reader = new(File.OpenRead(input.Name));
+        using BinaryReader reader = new(File.OpenRead(input.Path.AbsolutePath));
 
         // read csb start offset from file, get audio count from it, then copy into buffer
         int csbOffset = PositionReader.ReadInt32At(reader, Offset.pCSBPosition);
@@ -153,7 +145,7 @@ internal static class ConversionPipeline
             reader.BaseStream.Position = soundOffset;
             byte[] outBuf = reader.ReadBytes(soundSize);
 
-            outName = Path.Combine($"{output.TryGetLocalPath()}", $"{i+1}.wav");
+            outName = Path.Combine($"{output.Path.AbsolutePath}", $"{i+1}.wav");
 
             using FileStream outStream = File.Create(outName);
 
@@ -163,22 +155,20 @@ internal static class ConversionPipeline
             Logger.Message($"File {outName} written!");
         }
 
-        Bass.Free();
-
         return;
     }
 
     public static void EncodeSound(IStorageFolder input, IStorageFile output)
     {
-        if (input.TryGetLocalPath() == null)
+        if (input.Path.AbsolutePath == null)
             throw new DirectoryNotFoundException("No path for input directory.");
-        if (output.TryGetLocalPath() == null)
+        if (output.Path.AbsolutePath == null)
             throw new FileNotFoundException("No path for output file.");
 
         Logger.Message("Input is valid!", LogType.INFO);
 
-        using BinaryReader reader = new(File.OpenRead(output.Name));
-        using BinaryWriter writer = new(File.OpenWrite($"{output.Name}.new"));
+        using BinaryReader reader = new(File.OpenRead(input.Path.AbsolutePath));
+        using BinaryWriter writer = new(File.OpenWrite(output.Path.AbsolutePath));
 
         // get data structure offsets from SNDL header
         int csbOffset = PositionReader.ReadInt32At(reader, Offset.pCSBPosition);
@@ -336,10 +326,10 @@ internal static class ConversionPipeline
         pcmBufs = [];
         fmt = [];
 
-        if(dir.TryGetLocalPath() == null)
+        if(dir.Path.AbsolutePath == null)
             throw new DirectoryNotFoundException("No path for input directory.");
 
-        foreach (var file in Directory.EnumerateFiles(dir.TryGetLocalPath()).OrderBy(x => x, StringComparison.OrdinalIgnoreCase.WithNaturalSort()))
+        foreach (var file in Directory.EnumerateFiles(dir.Path.AbsolutePath).OrderBy(x => x, StringComparison.OrdinalIgnoreCase.WithNaturalSort()))
         {
             Logger.Message($"File {file} being processed!");
 

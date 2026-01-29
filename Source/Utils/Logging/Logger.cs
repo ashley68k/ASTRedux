@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using ManagedBass;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -111,6 +113,8 @@ namespace ASTRedux.Utils.Logging
             LogOut.Append($"{FormatMessage}\n");
 
             OnLogMessage?.Invoke(FormatMessage);
+
+            Bass.Free();
         }
     }
 }

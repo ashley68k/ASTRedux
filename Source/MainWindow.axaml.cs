@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using ManagedBass;
 
 namespace ASTRedux;
 public partial class MainWindow : Window
@@ -35,6 +36,8 @@ public partial class MainWindow : Window
         SetLabels();
 
         DependencyGrabber.GrabBassLibrary();
+
+        Bass.Init();
 
         PluginLoader.LoadPlugins(Environment.CurrentDirectory);
         Logger.Message("Plugin check complete!", LogType.INFO);
@@ -85,7 +88,10 @@ public partial class MainWindow : Window
                     Title = "Select folder to decode to",
                     AllowMultiple = false
                 });
-                ConversionPipeline.DecodeSound(soundIn[0], soundOut[0]);
+                if (soundIn.Any() && soundOut.Any())
+                    ConversionPipeline.DecodeSound(soundIn[0], soundOut[0]);
+                else
+                    Logger.Message("Operation cancelled!", LogType.WARNING);
                 break;
             case MUSIC_MODE:
                 // file -> file
@@ -99,11 +105,12 @@ public partial class MainWindow : Window
                 {
                     Title = "Select audio file to decode to"
                 });
-                ConversionPipeline.DecodeAST(musicIn[0], musicOut);
+                if(musicIn.Any() && musicOut != null)
+                    ConversionPipeline.DecodeAST(musicIn[0], musicOut);
+                else
+                    Logger.Message("Operation cancelled!", LogType.WARNING);
                 break;
         }
-
-        ConversionComplete();
     }
 
     // create a file of Dead Rising format
@@ -128,7 +135,10 @@ public partial class MainWindow : Window
                 {
                     Title = "Select rSound file to encode to",
                 });
-                ConversionPipeline.EncodeSound(soundIn[0], soundOut);
+                if(soundIn.Any() && soundOut != null)
+                    ConversionPipeline.EncodeSound(soundIn[0], soundOut);
+                else
+                    Logger.Message("Operation cancelled!", LogType.WARNING);
                 break;
             case MUSIC_MODE:
                 // file -> file
@@ -141,19 +151,11 @@ public partial class MainWindow : Window
                 {
                     Title = "Select AST file to encode to"
                 });
-                ConversionPipeline.EncodeAST(musicIn[0], musicOut);
+                if(musicIn.Any() && musicOut != null)
+                    ConversionPipeline.EncodeAST(musicIn[0], musicOut);
+                else
+                    Logger.Message("Operation cancelled!", LogType.WARNING);
                 break;
-        }
-
-        ConversionComplete();
-    }
-
-    private void ConversionComplete()
-    {
-        if (Logger.VerbosityLevel > LogDetail.LOW)
-        {
-            File.WriteAllText($"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log", Logger.LogOut.ToString());
-            Logger.Message("Log file written!", LogType.INFO);
         }
     }
 
