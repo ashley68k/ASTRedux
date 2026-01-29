@@ -6,6 +6,7 @@ namespace ASTRedux.Utils.Logging
 {
     internal static class Logger
     {
+        public static event Action<string>? OnLogMessage;
         public static LogDetail VerbosityLevel { get; set; }
 
         /// <summary>
@@ -23,21 +24,21 @@ namespace ASTRedux.Utils.Logging
         /// Sets colour based on the type of log
         /// </summary>
         /// <param name="type">A LogType enum describing the severity of the message</param>
-        private static void SetColour(LogType type)
-        {
-            switch (type)
-            {
-                case LogType.INFO:
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    break;
-                case LogType.WARNING:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
-                case LogType.ERROR:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-            }
-        }
+        //private static void SetColour(LogType type)
+        //{
+        //    switch (type)
+        //    {
+        //        case LogType.INFO:
+        //            Console.ForegroundColor = ConsoleColor.Green;
+        //            break;
+        //        case LogType.WARNING:
+        //            Console.ForegroundColor = ConsoleColor.Yellow;
+        //            break;
+        //        case LogType.ERROR:
+        //            Console.ForegroundColor = ConsoleColor.Red;
+        //            break;
+        //    }
+        //}
 
         /// <summary>
         /// Logs a message in accordance with specified verbosity and logging level. Should not be used with LogType.ERROR, which will redirect to CriticalMessage().
@@ -84,15 +85,12 @@ namespace ASTRedux.Utils.Logging
                     break;
             }
 
-            SetColour(type);
-
             LogOut.Append($"{FormatMessage}\n");
-            Console.WriteLine(FormatMessage);
+            
+            OnLogMessage?.Invoke(FormatMessage);
 
-            if(VerbosityLevel == LogDetail.EXTREME)
+            if (VerbosityLevel == LogDetail.EXTREME)
                 SW.Restart();
-
-            Console.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>
@@ -110,12 +108,9 @@ namespace ASTRedux.Utils.Logging
         {
             string FormatMessage = $"\n[ERROR] @ Line {srcLine} in file {Path.GetFileName(srcPath)} at method {memberName}(): {message}";
 
-            SetColour(LogType.ERROR);
-
             LogOut.Append($"{FormatMessage}\n");
-            Console.WriteLine(FormatMessage);
 
-            Console.ForegroundColor = ConsoleColor.White;
+            OnLogMessage?.Invoke(FormatMessage);
         }
     }
 }
