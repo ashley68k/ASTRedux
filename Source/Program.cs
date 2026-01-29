@@ -5,75 +5,90 @@ using ASTRedux.Utils.Logging;
 using ManagedBass;
 using System.CommandLine;
 using System.Reflection.Metadata.Ecma335;
+using Avalonia;
 
 namespace ASTRedux;
 
 internal static class Program
 {
-    /// <summary>
-    /// Entry point of the program, just parses CLI inputs
-    /// </summary>
-    /// <param name="args">CLI input</param>
-    /// <returns>Invocation of command</returns>
-    public static async Task<int> Main(string[] args)
-    {
-        var inputOption = new Option<FileSystemInfo>(
-            name: "--input",
-            description: "The file/directory to be processed")
-            {
-                IsRequired = true
-            };
+    // TODO: Reimplement the functionality of this with the new Avalonia stuff.
+    ///// <summary>
+    ///// Entry point of the program, just parses CLI inputs
+    ///// </summary>
+    ///// <param name="args">CLI input</param>
+    ///// <returns>Invocation of command</returns>
+    //public static async Task<int> Main(string[] args)
+    //{
+    //    var inputOption = new Option<FileSystemInfo>(
+    //        name: "--input",
+    //        description: "The file/directory to be processed")
+    //        {
+    //            IsRequired = true
+    //        };
 
-        inputOption.AddAlias("-i");
+    //    inputOption.AddAlias("-i");
 
-        var outputOption = new Option<FileSystemInfo?>(
-            name: "--output",
-            description: "The file/directory to be output")
-            {
-                IsRequired = false
-            };
+    //    var outputOption = new Option<FileSystemInfo?>(
+    //        name: "--output",
+    //        description: "The file/directory to be output")
+    //        {
+    //            IsRequired = false
+    //        };
 
-        outputOption.AddAlias("-o");
+    //    outputOption.AddAlias("-o");
 
-        var overwrite = new Option<bool>(
-            name: "--overwrite",
-            description: "Overwrite output file",
-            getDefaultValue: () => false
-            );
+    //    var overwrite = new Option<bool>(
+    //        name: "--overwrite",
+    //        description: "Overwrite output file",
+    //        getDefaultValue: () => false
+    //        );
 
-        overwrite.AddAlias("-w");
+    //    overwrite.AddAlias("-w");
 
-        var verbosityLevel = new Option<LogDetail>(
-            name: "--verbose",
-            description: "Verbosity/logging level",
-            getDefaultValue: () => LogDetail.LOW
-            );
+    //    var verbosityLevel = new Option<LogDetail>(
+    //        name: "--verbose",
+    //        description: "Verbosity/logging level",
+    //        getDefaultValue: () => LogDetail.LOW
+    //        );
 
-        verbosityLevel.AddAlias("-v");
+    //    verbosityLevel.AddAlias("-v");
 
-        var rootCommand = new RootCommand("ASTRedux - a CLI tool to convert Dead Rising audio");
-        rootCommand.AddOption(inputOption);
-        rootCommand.AddOption(outputOption);
-        rootCommand.AddOption(verbosityLevel);
-        rootCommand.AddOption(overwrite);
+    //    var rootCommand = new RootCommand("ASTRedux - a CLI tool to convert Dead Rising audio");
+    //    rootCommand.AddOption(inputOption);
+    //    rootCommand.AddOption(outputOption);
+    //    rootCommand.AddOption(verbosityLevel);
+    //    rootCommand.AddOption(overwrite);
 
-        rootCommand.SetHandler(async (input, output, level, overwrite) =>
-        {
-            Logger.VerbosityLevel = level;
+    //    rootCommand.SetHandler(async (input, output, level, overwrite) =>
+    //    {
+    //        Logger.VerbosityLevel = level;
 
-            Config.OverwriteOutput = overwrite;
+    //        Config.OverwriteOutput = overwrite;
 
-            if (level == LogDetail.EXTREME)
-                Logger.SW.Start();
+    //        if (level == LogDetail.EXTREME)
+    //            Logger.SW.Start();
 
-            if ((input != null) && (output != null))
-            {
-                await Start(input, output);
-            }
-        }, inputOption, outputOption, verbosityLevel, overwrite);
+    //        if ((input != null) && (output != null))
+    //        {
+    //            await Start(input, output);
+    //        }
+    //    }, inputOption, outputOption, verbosityLevel, overwrite);
 
-        return await rootCommand.InvokeAsync(args);
-    }
+    //    return await rootCommand.InvokeAsync(args);
+    //}
+
+    // Initialization code. Don't use any Avalonia, third-party APIs or any
+    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+    // yet and stuff might break.
+    [STAThread]
+    public static void Main(string[] args) => BuildAvaloniaApp()
+        .StartWithClassicDesktopLifetime(args);
+
+    // Avalonia configuration, don't remove; also used by visual designer.
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .LogToTrace();
 
     /// <summary>
     /// Ran by the command line handler to validate and check the input file and pass command line args etc to where necessary.
