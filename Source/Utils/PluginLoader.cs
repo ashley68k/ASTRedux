@@ -7,6 +7,8 @@ internal static class PluginLoader
 {
     public static void LoadPlugins(string rootDir)
     {
+        int successCount = 0;
+
         // ugly linq hack to let plugin DLLs reside in the same directory as the bass.dll and dependency assemblies
         var files = Directory.EnumerateFiles($"{rootDir}", $"*.{OSUtils.LibraryExtension()}")
             .Where(file =>
@@ -15,9 +17,12 @@ internal static class PluginLoader
                 !string.Equals(Path.GetFileNameWithoutExtension(file), $"{OSUtils.GetBassLibraryName()}", StringComparison.OrdinalIgnoreCase)
             );
 
-        if (!files.Any() )
+        if (!files.Any())
+        {
             Logger.Message($"No plugins found!", LogType.WARNING);
-
+            return;
+        }
+            
         foreach (var file in files)
         {
             using BinaryReader validator = new(File.OpenRead(file));
@@ -28,13 +33,18 @@ internal static class PluginLoader
 
             Logger.Message($"Library PE magic 0x{OSUtils.GetPEMagic():X8} in candidate {Path.GetFileName(file)} matches!", LogType.INFO);
 
+            // maybe check the export table at some point to validate it's a true plugin
+
             if (Bass.PluginLoad(file) == 0)
             {
                 Logger.CriticalMessage($"BASS Error '{Bass.LastError}' during plugin loading!\nPlugin Path: {file}");
                 break;
             }
 
+            successCount++;
             Logger.Message($"BASS plugin {Path.GetFileName(file)} loaded!", LogType.INFO);
         }
+
+        Logger.Message($"{successCount} BASS plugin(s) loaded!", LogType.INFO);
     }
 }

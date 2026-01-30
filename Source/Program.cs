@@ -1,11 +1,4 @@
-﻿using ASTRedux.Utils;
-using ASTRedux.Utils.Consts;
-using ASTRedux.Utils.Helpers;
-using ASTRedux.Utils.Logging;
-using ManagedBass;
-using System.CommandLine;
-using System.Reflection.Metadata.Ecma335;
-using Avalonia;
+﻿using Avalonia;
 
 namespace ASTRedux;
 

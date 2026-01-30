@@ -3,8 +3,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="ASTRedux.MainWindow"
+        MinWidth="400" MinHeight="225"
+        x:Class="ASTRedux.MainWindow" x:CompileBindings="True"
         Title="ASTRedux"
+        Icon="avares://ASTRedux/Assets/icon.png"
 >
     <!--theme dict-->
     <Window.Resources>
@@ -68,12 +70,32 @@
                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center" 
                 Target="LogSelect">Log Detail</Label>
         </StackPanel>
+        <StackPanel Grid.Row="3" Grid.Column="6" Grid.ColumnSpan="2">
+        <ComboBox Name="PlatformSelect"
+                    Margin="20,0,0,0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    SelectedIndex="0">
+            <ComboBoxItem Content="PC" IsSelected="True"/>
+            <ComboBoxItem Content="Xbox 360 (UNSUPPORTED)" IsSelected="False" IsEnabled="False"/>
+        </ComboBox>
+        <Label Margin="20,0,0,0"
+                HorizontalContentAlignment="Left" VerticalContentAlignment="Center" 
+                Target="PlatformSelect">Target Platform</Label>
+        </StackPanel>
         <Button Name="DecodeBtn"
                 Grid.Row="7" Grid.Column="0" 
                 Grid.ColumnSpan="2" Grid.RowSpan="2" 
                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                 Click="Decode">
+        </Button>
+        <Button Name="ClearBtn" Content="Clear Log Window"
+                Grid.Row="5" Grid.Column="6" 
+                Grid.ColumnSpan="2" Grid.RowSpan="1"
+                Margin="20,0,0,0"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                Click="ClearLog">
         </Button>
         <Button Name="EncodeBtn"
                 Grid.Row="7" Grid.Column="4" 

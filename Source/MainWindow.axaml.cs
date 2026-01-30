@@ -35,13 +35,6 @@ public partial class MainWindow : Window
 
         SetLabels();
 
-        DependencyGrabber.GrabBassLibrary();
-
-        Bass.Init();
-
-        PluginLoader.LoadPlugins(Environment.CurrentDirectory);
-        Logger.Message("Plugin check complete!", LogType.INFO);
-
         Logger.Message("Welcome to ASTRedux!");
     }
 
@@ -105,7 +98,7 @@ public partial class MainWindow : Window
                 {
                     Title = "Select audio file to decode to"
                 });
-                if(musicIn.Any() && musicOut != null)
+                if (musicIn.Any() && musicOut != null)
                     ConversionPipeline.DecodeAST(musicIn[0], musicOut);
                 else
                     Logger.Message("Operation cancelled!", LogType.WARNING);
@@ -135,7 +128,7 @@ public partial class MainWindow : Window
                 {
                     Title = "Select rSound file to encode to",
                 });
-                if(soundIn.Any() && soundOut != null)
+                if (soundIn.Any() && soundOut != null)
                     ConversionPipeline.EncodeSound(soundIn[0], soundOut);
                 else
                     Logger.Message("Operation cancelled!", LogType.WARNING);
@@ -151,7 +144,7 @@ public partial class MainWindow : Window
                 {
                     Title = "Select AST file to encode to"
                 });
-                if(musicIn.Any() && musicOut != null)
+                if (musicIn.Any() && musicOut != null)
                     ConversionPipeline.EncodeAST(musicIn[0], musicOut);
                 else
                     Logger.Message("Operation cancelled!", LogType.WARNING);
@@ -171,5 +164,13 @@ public partial class MainWindow : Window
     private void ModeTab_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         SetLabels();
+    }
+
+    private void ClearLog(object? sender, RoutedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            LogWindow.Text = String.Empty;
+        });
     }
 }

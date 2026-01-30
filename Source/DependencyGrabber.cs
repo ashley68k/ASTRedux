@@ -76,8 +76,13 @@ internal static class DependencyGrabber
 
         string bassLibUrl = $"https://www.un4seen.com/files/";
 
-        if (Path.Exists(Path.Combine(AppContext.BaseDirectory, bassFile)))
+        // Logger.Message(Path.Combine(AppContext.BaseDirectory, $"{OSUtils.GetBassLibraryName() + '.' + OSUtils.LibraryExtension()}"));
+        
+        if (Path.Exists(Path.Combine(AppContext.BaseDirectory, $"{OSUtils.GetBassLibraryName() + '.' + OSUtils.LibraryExtension()}")))
+        {
+            Logger.Message($"BASS exists!");
             return;
+        }
 
         if (!await DownloadAsync(bassLibUrl, bassFile))
         {

@@ -1,4 +1,5 @@
-﻿using ASTRedux.Utils.Logging;
+﻿using ASTRedux.Utils;
+using ASTRedux.Utils.Logging;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -19,6 +20,14 @@ public partial class App : Application
         {
             desktop.MainWindow = new MainWindow();
             desktop.Exit += FinishProcess;
+            desktop.MainWindow.Opened += async (_, _) =>
+            {
+                await DependencyGrabber.GrabBassLibrary();
+
+                Bass.Init();
+                Logger.Message("BASS initialized!");  
+                PluginLoader.LoadPlugins(AppContext.BaseDirectory);
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

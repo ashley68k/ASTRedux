@@ -7,10 +7,25 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishAot>false</PublishAot>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	<InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+	
   <ItemGroup>
     <Compile Remove="obj\**" />
     <EmbeddedResource Remove="obj\**" />
     <None Remove="obj\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +39,6 @@
     <PackageReference Include="BinaryEx" Version="0.4.0" />
     <PackageReference Include="ManagedBass" Version="3.1.1" />
     <PackageReference Include="NaturalSort.Extension" Version="4.3.0" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
   <ItemGroup>
